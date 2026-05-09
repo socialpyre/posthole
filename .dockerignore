@@ -1,0 +1,40 @@
+# Python build/cache
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.ty_cache
+**/.mypy_cache
+.venv/
+dist/
+build/
+
+# Source control
+.git/
+.github/
+
+# Node
+node_modules/
+
+# Generated assets (rebuilt inside the build stage)
+src/postpit/static/app.js
+src/postpit/static/app.js.map
+src/postpit/static/app.css
+
+# Docs / tests / markdown not needed in image
+docs/
+tests/
+*.md
+!README.md
+
+# Secrets / local-only — never copy these into a layer
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+id_rsa*
+secrets/
+*.sqlite
+*.sqlite3
+*.db
