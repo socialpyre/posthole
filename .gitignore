@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+.Python
+build/
+dist/
+.tox/
+.venv/
+venv/
+env/
+ENV/
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.cache/
+junit.xml
+
+# Type checkers
+.mypy_cache/
+.pyright/
+.ty/
+.ruff_cache/
+
+# Node / pnpm
+node_modules/
+
+# Generated assets (rebuilt by `make assets`)
+src/postpit/static/app.js
+src/postpit/static/app.js.map
+src/postpit/static/app.css
+
+# Environment files
+.env
+.env.local
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*~

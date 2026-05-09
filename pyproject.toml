@@ -1,0 +1,147 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = [ "hatchling>=1.25" ]
+
+[project]
+name = "postpit"
+version = "0.0.0"
+description = "Local mock server for social media platform APIs - auth, publishing, the lot"
+readme = "README.md"
+keywords = [ "devtool", "fastapi", "hotwire", "instagram", "mock-server", "social-media" ]
+license = "MIT"
+authors = [
+  { name = "Dane Thurber", email = "dane.thurber@gmail.com" },
+  { name = "Pyre" },
+]
+requires-python = ">=3.12"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: FastAPI",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Testing :: Mocking",
+  "Typing :: Typed",
+]
+dependencies = [
+  "fastapi[standard]>=0.115",
+  "fastapi-hotwire>=0.1",
+  "jinja2>=3.1",
+  "pydantic-settings>=2.6",
+]
+urls.Changelog = "https://github.com/socialpyre/postpit/blob/main/CHANGELOG.md"
+urls.Homepage = "https://github.com/socialpyre/postpit"
+urls.Issues = "https://github.com/socialpyre/postpit/issues"
+urls.Source = "https://github.com/socialpyre/postpit"
+scripts.postpit = "postpit.__main__:main"
+
+[dependency-groups]
+dev = [
+  "arel>=0.3",
+  "httpx>=0.28",
+  "pre-commit>=4",
+  "pytest>=8",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=5",
+  "pytest-sugar>=1",
+  "ruff>=0.15",
+  "ty>=0.0.1a14,<0.1",
+]
+
+[tool.hatch]
+# These files are gitignored (built by pnpm assets:build) but must ship in the
+# wheel so the installed package is self-contained.
+build.artifacts = [
+  "src/postpit/static/app.js",
+  "src/postpit/static/app.css",
+]
+build.targets.wheel.packages = [ "src/postpit" ]
+
+[tool.uv]
+required-version = ">=0.11"
+default-groups = [ "dev" ]
+index = [
+  { name = "pypi", url = "https://pypi.org/simple/", default = true },
+]
+package = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = [ "src", "tests" ]
+format.quote-style = "double"
+format.docstring-code-format = true
+lint.select = [
+  "ARG",   # flake8-unused-arguments
+  "ASYNC", # flake8-async
+  "B",     # flake8-bugbear
+  "BLE",   # flake8-blind-except
+  "C4",    # flake8-comprehensions
+  "E",     # pycodestyle errors
+  "EM",    # flake8-errmsg
+  "F",     # pyflakes
+  "FA",    # flake8-future-annotations
+  "I",     # isort
+  "N",     # pep8-naming
+  "PT",    # flake8-pytest-style
+  "PTH",   # flake8-use-pathlib
+  "RET",   # flake8-return
+  "RUF",   # ruff-specific
+  "S",     # flake8-bandit
+  "SIM",   # flake8-simplify
+  "T20",   # flake8-print
+  "TC",    # flake8-type-checking
+  "TID",   # flake8-tidy-imports
+  "UP",    # pyupgrade
+  "W",     # pycodestyle warnings
+]
+lint.ignore = [
+  "E501",   # line length — formatter handles
+  "ISC001", # conflicts with formatter (ruff itself recommends ignore)
+]
+lint.per-file-ignores."src/**/__init__.py" = [ "F401" ]
+lint.per-file-ignores."tests/**/*.py" = [ "S101" ]
+lint.flake8-tidy-imports.ban-relative-imports = "all"
+lint.isort.known-first-party = [ "postpit" ]
+
+[tool.ty]
+src.include = [ "src", "tests" ]
+
+[tool.pytest]
+ini_options.testpaths = [ "tests" ]
+ini_options.asyncio_mode = "auto"
+ini_options.addopts = "--strict-markers"
+
+[tool.semantic_release]
+version_toml = [ "pyproject.toml:project.version" ]
+branch = "main"
+build_command = "pip install build && python -m build"
+commit_message = "chore(release): {version} [skip ci]"
+upload_to_pypi = false
+upload_to_release = true
+tag_format = "v{version}"
+major_on_zero = false
+allow_zero_version = true
+branches.main.match = "main"
+branches.main.prerelease = false
+changelog.exclude_commit_patterns = [ "^chore\\(release\\):.*" ]
+commit_parser_options.allowed_tags = [
+  "feat",
+  "fix",
+  "perf",
+  "docs",
+  "chore",
+  "ci",
+  "test",
+  "refactor",
+  "build",
+  "style",
+  "revert",
+]
+commit_parser_options.minor_tags = [ "feat" ]
+commit_parser_options.patch_tags = [ "fix", "perf" ]

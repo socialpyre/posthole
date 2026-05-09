@@ -1,0 +1,72 @@
+name: Bug report
+description: postpit doing something it shouldn't, or not doing something it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please complete the fields below — the more
+        specific you can be about how to reproduce, the faster we can fix it.
+
+  - type: input
+    id: version
+    attributes:
+      label: postpit version
+      description: Output of `postpit --version`, the Docker image tag, or the commit SHA.
+      placeholder: "0.0.1 / ghcr.io/socialpyre/postpit:latest / commit abc1234"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install postpit?
+      options:
+        - Docker (ghcr.io/socialpyre/postpit)
+        - uvx / PyPI
+        - Local clone (make dev)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS / Python version
+      description: e.g. macOS 15.4 (arm64), Python 3.12.11
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of what went wrong, including any error output.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Minimum steps to reproduce. Include the exact request/response if relevant.
+      placeholder: |
+        1. `docker run --rm -p 5176:5176 ghcr.io/socialpyre/postpit:latest`
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Logs, screenshots, related issues, workarounds you've tried.
+    validations:
+      required: false

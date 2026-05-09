@@ -1,0 +1,16 @@
+services:
+  postpit:
+    image: ghcr.io/socialpyre/postpit:latest
+    # build: .
+    ports:
+      # Loopback-only by default — postpit is a developer tool, not a public
+      # service. Change to "5176:5176" to bind on all host interfaces (LAN).
+      - "127.0.0.1:5176:5176"
+    volumes:
+      - postpit-data:/data
+    environment:
+      POSTPIT_DATABASE_URL: /data/postpit.db
+    restart: unless-stopped
+
+volumes:
+  postpit-data:

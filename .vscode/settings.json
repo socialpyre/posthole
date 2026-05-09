@@ -1,0 +1,80 @@
+{
+  "// purpose": "Project-shared VS Code settings. User-local overrides go in your User Settings or .vscode/settings.local.json.",
+
+  "css.lint.unknownAtRules": "ignore",
+
+  "files.associations": {
+    "*.html.jinja": "jinja-html",
+    "*.jinja": "jinja"
+  },
+
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[jinja-html]": {
+    "editor.formatOnSave": false
+  },
+
+  "tailwindCSS.includeLanguages": {
+    "jinja-html": "html",
+    "jinja": "html"
+  },
+  "tailwindCSS.experimental.classRegex": [["class=\"([^\"]*)\""], ["class='([^']*)'"]],
+
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true,
+    "**/.ty_cache": true,
+    "**/.mypy_cache": true
+  },
+
+  "search.exclude": {
+    "pnpm-lock.yaml": true,
+    "uv.lock": true,
+    "src/postpit/static/app.js": true,
+    "src/postpit/static/app.js.map": true,
+    "src/postpit/static/app.css": true
+  },
+
+  "python.analysis.typeCheckingMode": "off",
+  "python.terminal.activateEnvironment": true
+}
