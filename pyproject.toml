@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = [ "hatchling>=1.25" ]
+requires = [ "hatchling>=1.29.0" ]
 
 [project]
 name = "postpit"
@@ -29,7 +29,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "fastapi[standard]>=0.115",
+  "fastapi[standard]>=0.136.1",
   "fastapi-hotwire>=0.1",
   "jinja2>=3.1",
   "pydantic-settings>=2.6",
