@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # --- Stage 1: build frontend assets (Node) ---
-FROM node:22-slim AS assets
+FROM node:26-slim AS assets
 
 WORKDIR /src
 
@@ -20,7 +20,7 @@ RUN pnpm run typecheck && pnpm run assets:build
 
 # --- Stage 2: build python wheel (uv) ---
 # Pin uv via versioned image; copy the binary into a standard Python base.
-FROM python:3.12-slim-bookworm AS pybuild
+FROM python:3.14-slim-bookworm AS pybuild
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.12 /uv /usr/local/bin/uv
 
@@ -33,7 +33,7 @@ COPY --from=assets /src/src/postpit/static/ ./src/postpit/static/
 RUN uv build --no-sources --wheel
 
 # --- Stage 3: runtime ---
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 LABEL org.opencontainers.image.source="https://github.com/socialpyre/postpit"
 LABEL org.opencontainers.image.description="Local mock server for social media platform APIs"
