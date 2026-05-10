@@ -1,3 +1,5 @@
+"""Local mock server for social media platform APIs."""
+
 from importlib.metadata import PackageNotFoundError, version
 
 try:
