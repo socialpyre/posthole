@@ -22,6 +22,7 @@
     "esbuild": "^0.28.0",
     "npm-run-all2": "^8.0.4",
     "prettier": "^3.8.3",
+    "prettier-plugin-jinja-template": "^2.2.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.0",
     "varlock": "^1.1.0"

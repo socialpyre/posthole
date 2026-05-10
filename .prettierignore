@@ -17,10 +17,6 @@ build/
 .ty_cache/
 .mypy_cache/
 
-# Jinja templates — Prettier has no Jinja-aware formatter and would mangle
-# `{% %}` / `{{ }}` tags. Keep editor formatting off for these (see .vscode/settings.json).
-src/postpit/templates/
-
 # Schema-driven env config — varlock owns the format.
 .env.schema
 .env.local
