@@ -49,3 +49,6 @@ src/postpit/static/app.css
 !.vscode/extensions.json
 *.swp
 *~
+
+# Scratch / local notes
+.scratch/

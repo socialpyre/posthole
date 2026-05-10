@@ -1,30 +1,34 @@
+"""FastAPI application factory and ASGI lifespan for postpit."""
+
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi_hotwire import HotwireTemplates
 from starlette.routing import WebSocketRoute
 
 from postpit import __version__
 from postpit.config import get_settings
 from postpit.web import pages, system
+from postpit.web.templates import TEMPLATES_DIR, build_templates
 
 PKG = Path(__file__).parent
-templates = HotwireTemplates(directory=PKG / "templates")
+templates = build_templates()
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """Mount the dev hot-reload watcher when ``POSTPIT_DEV_RELOAD=1``."""
     settings = get_settings()
 
     if settings.dev_reload:
+        # arel is in the dev dependency-group, not runtime — keep the import inline.
         import arel
 
         hot = arel.HotReload(
             paths=[
-                arel.Path(str(PKG / "templates")),
+                arel.Path(str(TEMPLATES_DIR)),
                 arel.Path(str(PKG / "static")),
             ],
         )
@@ -45,6 +49,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
+    """Build and return the postpit FastAPI application."""
     settings = get_settings()
 
     app = FastAPI(

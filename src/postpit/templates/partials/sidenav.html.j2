@@ -1,0 +1,82 @@
+{% from "macros/icon.html.j2" import icon %}
+{%
+  set items = [
+    ("/", "Inbox", "inbox"),
+    ("/accounts", "Accounts", "users"),
+    ("/scenarios", "Scenarios", "beaker"),
+    ("/settings", "Settings", "cog"),
+  ]
+%}
+
+<aside
+  data-postpit-sidebar
+  class="fixed inset-y-0 left-0 z-50 flex w-65 flex-col border-r border-(--border)
+         bg-(--sidebar) shadow-[4px_0_24px_rgba(0,0,0,.12)]
+         lg:static lg:z-auto lg:w-55 lg:shadow-none"
+>
+  <div class="flex items-center justify-between border-b border-(--border) px-3 py-2 lg:hidden">
+    <span class="font-mono text-sm font-semibold">postpit</span>
+    <button
+      type="button"
+      data-controller="sidebar"
+      data-action="click->sidebar#close"
+      aria-label="Close menu"
+      class="flex h-7 w-7 items-center justify-center rounded text-(--sub) hover:bg-(--hover)"
+    >
+      {{ icon("x", 16) }}
+    </button>
+  </div>
+
+  <nav aria-label="Primary" class="flex-1 overflow-y-auto px-2 py-2">
+    <p
+      data-collapse-hide
+      class="mt-1 px-2.5 pt-1 pb-1.5 font-mono text-[10px] font-bold tracking-[0.06em] text-(--muted) uppercase"
+    >
+      Workspace
+    </p>
+    <ul class="space-y-0.5">
+      {% for path, label, ic in items %}
+        {% set is_current = request.url.path == path %}
+        <li>
+          <a
+            href="{{ path }}"
+            data-controller="sidebar"
+            data-action="click->sidebar#close"
+            {% if is_current %}aria-current="page"{% endif %}
+            class="relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition
+              {% if is_current %}
+              bg-(--accent-bg) font-semibold text-(--accent-text) before:content-['']
+              before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5
+              before:rounded-r before:bg-(--accent)
+            {% else %}
+              text-(--fg) hover:bg-(--hover)
+            {% endif %}"
+          >
+            <span
+              class="shrink-0 {% if is_current %}text-(--accent-text){% else %}text-(--muted){% endif %}"
+            >
+              {{ icon(ic, 16) }}
+            </span>
+            <span data-collapse-hide class="flex-1">{{ label }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <div class="hidden border-t border-(--border) p-2 lg:block">
+    <button
+      type="button"
+      data-controller="sidebar"
+      data-action="click->sidebar#toggleCollapse"
+      aria-label="Toggle sidebar"
+      class="flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-(--sub) hover:bg-(--hover)"
+    >
+      <span data-collapse-hide class="inline-flex items-center gap-1.5">
+        {{ icon("chev-left", 14) }}
+        <span class="font-mono text-[11px]">Collapse</span>
+      </span>
+      <span data-collapse-show class="hidden"> {{ icon("chev-right", 14) }} </span>
+    </button>
+  </div>
+</aside>

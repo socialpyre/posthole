@@ -29,7 +29,7 @@ assets: ## one-shot build of JS + CSS
 	pnpm run assets:build
 
 dev: assets ## run server + asset watchers concurrently with browser auto-reload
-	@trap 'kill 0' EXIT; \
+	@trap 'kill 0; exit 0' INT TERM EXIT; \
 	pnpm run assets:watch & \
 	$(VARLOCK) env POSTPIT_DEV_RELOAD=1 uv run fastapi dev src/postpit/main.py --port 5176 & \
 	wait

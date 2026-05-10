@@ -1,0 +1,31 @@
+{% from "macros/icon.html.j2" import icon %}
+
+<header class="flex h-12 shrink-0 items-center gap-3 border-b border-(--border) bg-(--panel) px-3">
+  <button
+    type="button"
+    data-controller="sidebar"
+    data-action="click->sidebar#open"
+    aria-label="Open menu"
+    class="flex h-8 w-8 items-center justify-center rounded text-(--sub) hover:bg-(--hover) lg:hidden"
+  >
+    {{ icon("menu", 18) }}
+  </button>
+
+  <a href="/" class="flex items-center gap-2 font-mono text-sm font-semibold tracking-tight">
+    <span>postpit</span>
+  </a>
+
+  <div class="ml-auto flex items-center gap-1.5">
+    <button
+      type="button"
+      data-controller="theme"
+      data-action="click->theme#cycle"
+      aria-label="Cycle theme: light, dark, system"
+      class="flex h-7 w-7 items-center justify-center rounded text-(--sub) hover:bg-(--hover)"
+    >
+      <span data-theme-icon="light">{{ icon("sun", 16) }}</span>
+      <span data-theme-icon="dark">{{ icon("moon", 16) }}</span>
+      <span data-theme-icon="system">{{ icon("monitor", 16) }}</span>
+    </button>
+  </div>
+</header>

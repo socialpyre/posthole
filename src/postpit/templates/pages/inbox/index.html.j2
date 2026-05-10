@@ -1,0 +1,6 @@
+{% extends "layouts/app.html.j2" %}
+{% from "macros/empty_state.html.j2" import empty_state %}
+
+{% block main %}
+  {{ empty_state("No posts yet", "Publish one to see it here.") }}
+{% endblock %}

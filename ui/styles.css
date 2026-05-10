@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@source "../src/postpit/templates";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --bg: #fafaf9;
+  --panel: #ffffff;
+  --sidebar: #f6f5f2;
+  --fg: #0f172a;
+  --sub: #64748b;
+  --muted: #94a3b8;
+  --border: rgb(15 23 42 / 5%);
+  --border-mid: rgb(15 23 42 / 8%);
+  --border-strong: rgb(15 23 42 / 14%);
+  --accent: #5b5bd6;
+  --accent-bg: rgb(91 91 214 / 8%);
+  --accent-text: #5b5bd6;
+  --hover: rgb(15 23 42 / 4%);
+  --selected: rgb(91 91 214 / 6%);
+  --code: #f4f3f0;
+}
+
+[data-theme="dark"] {
+  --bg: #0a0a0b;
+  --panel: #111113;
+  --sidebar: #0d0d10;
+  --fg: #e2e8f0;
+  --sub: #94a3b8;
+  --muted: #64748b;
+  --border: rgb(255 255 255 / 5%);
+  --border-mid: rgb(255 255 255 / 9%);
+  --border-strong: rgb(255 255 255 / 14%);
+  --accent: #818cf8;
+  --accent-bg: rgb(129 140 248 / 12%);
+  --accent-text: #a5b4fc;
+  --hover: rgb(255 255 255 / 4%);
+  --selected: rgb(129 140 248 / 8%);
+  --code: #0a0a0b;
+}
+
+@theme {
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sub);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+[data-theme-icon] {
+  display: none;
+}
+[data-theme-choice="light"] [data-theme-icon="light"],
+[data-theme-choice="dark"] [data-theme-icon="dark"],
+[data-theme-choice="system"] [data-theme-icon="system"] {
+  display: inline;
+}
+
+@media (max-width: 1023px) {
+  [data-postpit-sidebar] {
+    transform: translateX(-100%);
+    transition: transform 0.15s ease;
+  }
+  html[data-drawer-open] [data-postpit-sidebar] {
+    transform: translateX(0);
+  }
+}
+html[data-drawer-open] [data-drawer-overlay] {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  [data-postpit-sidebar] {
+    transition: width 0.15s ease;
+  }
+  html[data-sidebar-collapsed] [data-postpit-sidebar] {
+    width: 52px;
+  }
+  html[data-sidebar-collapsed] [data-collapse-hide] {
+    display: none;
+  }
+  html[data-sidebar-collapsed] [data-collapse-show] {
+    display: inline-flex;
+  }
+  html[data-sidebar-collapsed] [data-postpit-sidebar] nav a {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

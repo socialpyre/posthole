@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{% block title %}postpit{% endblock %}</title>
+
+    <script>
+      (function () {
+        var c = "light";
+        try {
+          c = localStorage.getItem("postpit:theme") || "light";
+        } catch (e) {}
+        var dark =
+          c === "dark" ||
+          (c === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        var h = document.documentElement;
+        h.setAttribute("data-theme", dark ? "dark" : "light");
+        h.setAttribute("data-theme-choice", c);
+        try {
+          if (localStorage.getItem("postpit:sidebar-collapsed") === "1") {
+            h.setAttribute("data-sidebar-collapsed", "");
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}" />
+    <script type="module" src="{{ url_for('static', path='app.js') }}"></script>
+
+    {% if DEV_RELOAD %}
+      <script>
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        const ws = new WebSocket(`${proto}//${location.host}/hot-reload`);
+        ws.onmessage = () => location.reload();
+      </script>
+    {% endif %}
+
+    {% block head %}
+    {% endblock %}
+  </head>
+
+  <body class="h-screen overflow-hidden bg-(--bg) text-(--fg)">
+    <button
+      type="button"
+      data-controller="sidebar"
+      data-action="click->sidebar#close"
+      aria-label="Close menu"
+      data-drawer-overlay
+      class="fixed inset-0 z-40 hidden bg-black/45 backdrop-blur-sm lg:hidden"
+    ></button>
+
+    <div class="flex h-full">
+      {% include "partials/sidenav.html.j2" %}
+
+      <div class="flex min-w-0 flex-1 flex-col">
+        {% include "partials/topbar.html.j2" %}
+        <main class="flex-1 min-w-0 min-h-0 overflow-hidden">{% block main %}{% endblock %}</main>
+      </div>
+    </div>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

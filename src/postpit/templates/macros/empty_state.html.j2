@@ -1,0 +1,12 @@
+{% macro empty_state(title, body=None) %}
+  <div class="flex h-full w-full items-center justify-center p-6">
+    <div
+      class="flex max-w-md flex-col items-center gap-2 rounded-lg border border-dashed border-(--border-mid) bg-(--panel) px-8 py-10 text-center"
+    >
+      <h2 class="font-mono text-sm font-semibold text-(--fg)">{{ title }}</h2>
+      {% if body %}
+        <p class="text-[13px] text-(--sub)">{{ body }}</p>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}
