@@ -6,7 +6,7 @@ body:
     id: problem
     attributes:
       label: What problem are you trying to solve?
-      description: A description of the use case. What are you trying to test, and what about postpit's current shape blocks it?
+      description: A description of the use case. What are you trying to test, and what about posthole's current shape blocks it?
     validations:
       required: true
 
@@ -14,7 +14,7 @@ body:
     id: proposal
     attributes:
       label: Proposed behavior
-      description: How would you like postpit to work? Sketch out the UX, API surface, or scenario.
+      description: How would you like posthole to work? Sketch out the UX, API surface, or scenario.
     validations:
       required: true
 

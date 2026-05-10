@@ -594,8 +594,8 @@ wheels = [
 ]
 
 [[package]]
-name = "postpit"
-version = "0.1.0"
+name = "posthole"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },

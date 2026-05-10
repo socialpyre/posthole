@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 
-const COLLAPSE_KEY = "postpit:sidebar-collapsed";
+const COLLAPSE_KEY = "posthole:sidebar-collapsed";
 
 export default class extends Controller<HTMLElement> {
   open(): void {

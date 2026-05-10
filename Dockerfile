@@ -13,8 +13,8 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
 COPY tsconfig.json ./
-COPY web/ ./web/
-COPY src/postpit/templates/ ./src/postpit/templates/
+COPY ui/ ./ui/
+COPY src/posthole/templates/ ./src/posthole/templates/
 
 RUN pnpm run typecheck && pnpm run assets:build
 
@@ -28,19 +28,19 @@ WORKDIR /src
 
 COPY pyproject.toml uv.lock README.md LICENSE ./
 COPY src/ ./src/
-COPY --from=assets /src/src/postpit/static/ ./src/postpit/static/
+COPY --from=assets /src/src/posthole/static/ ./src/posthole/static/
 
 RUN uv build --no-sources --wheel
 
 # --- Stage 3: runtime ---
 FROM python:3.14-slim AS runtime
 
-LABEL org.opencontainers.image.source="https://github.com/socialpyre/postpit"
+LABEL org.opencontainers.image.source="https://github.com/socialpyre/posthole"
 LABEL org.opencontainers.image.description="Local mock server for social media platform APIs"
 LABEL org.opencontainers.image.licenses="MIT"
 
-RUN useradd -r -u 10001 -m -d /home/postpit -s /usr/sbin/nologin postpit \
- && mkdir -p /data && chown postpit:postpit /data
+RUN useradd -r -u 10001 -m -d /home/posthole -s /usr/sbin/nologin posthole \
+ && mkdir -p /data && chown posthole:posthole /data
 
 WORKDIR /app
 
@@ -48,17 +48,17 @@ COPY --from=pybuild /src/dist/*.whl /tmp/
 
 RUN pip install --no-cache-dir /tmp/*.whl && rm /tmp/*.whl
 
-ENV POSTPIT_HOST=0.0.0.0 \
-    POSTPIT_PORT=5176 \
-    POSTPIT_DATABASE_URL=/data/postpit.db
+ENV POSTHOLE_HOST=0.0.0.0 \
+    POSTHOLE_PORT=5176 \
+    POSTHOLE_DATABASE_URL=/data/posthole.db
 
 VOLUME ["/data"]
 
 EXPOSE 5176
 
-USER postpit
+USER posthole
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD python -c "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen(f'http://127.0.0.1:{os.environ.get(\"POSTPIT_PORT\",\"5176\")}/_health',timeout=2).status==200 else 1)"
+  CMD python -c "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen(f'http://127.0.0.1:{os.environ.get(\"POSTHOLE_PORT\",\"5176\")}/_health',timeout=2).status==200 else 1)"
 
-CMD ["python", "-m", "postpit"]
+CMD ["python", "-m", "posthole"]

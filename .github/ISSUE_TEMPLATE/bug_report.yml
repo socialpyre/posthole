@@ -1,5 +1,5 @@
 name: Bug report
-description: postpit doing something it shouldn't, or not doing something it should
+description: posthole doing something it shouldn't, or not doing something it should
 labels: [bug]
 body:
   - type: markdown
@@ -11,18 +11,18 @@ body:
   - type: input
     id: version
     attributes:
-      label: postpit version
-      description: Output of `postpit --version`, the Docker image tag, or the commit SHA.
-      placeholder: "0.0.1 / ghcr.io/socialpyre/postpit:latest / commit abc1234"
+      label: posthole version
+      description: Output of `posthole --version`, the Docker image tag, or the commit SHA.
+      placeholder: "0.0.1 / ghcr.io/socialpyre/posthole:latest / commit abc1234"
     validations:
       required: true
 
   - type: dropdown
     id: install
     attributes:
-      label: How did you install postpit?
+      label: How did you install posthole?
       options:
-        - Docker (ghcr.io/socialpyre/postpit)
+        - Docker (ghcr.io/socialpyre/posthole)
         - uvx / PyPI
         - Local clone (make dev)
         - Other
@@ -58,7 +58,7 @@ body:
       label: Reproduction steps
       description: Minimum steps to reproduce. Include the exact request/response if relevant.
       placeholder: |
-        1. `docker run --rm -p 5176:5176 ghcr.io/socialpyre/postpit:latest`
+        1. `docker run --rm -p 5176:5176 ghcr.io/socialpyre/posthole:latest`
         2. ...
     validations:
       required: true

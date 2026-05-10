@@ -3,7 +3,7 @@ build-backend = "hatchling.build"
 requires = [ "hatchling>=1.25" ]
 
 [project]
-name = "postpit"
+name = "posthole"
 version = "0.1.1"
 description = "Local mock server for social media platform APIs - auth, publishing, the lot"
 readme = "README.md"
@@ -34,11 +34,11 @@ dependencies = [
   "jinja2>=3.1",
   "pydantic-settings>=2.6",
 ]
-urls.Changelog = "https://github.com/socialpyre/postpit/blob/main/CHANGELOG.md"
-urls.Homepage = "https://github.com/socialpyre/postpit"
-urls.Issues = "https://github.com/socialpyre/postpit/issues"
-urls.Source = "https://github.com/socialpyre/postpit"
-scripts.postpit = "postpit.__main__:main"
+urls.Changelog = "https://github.com/socialpyre/posthole/blob/main/CHANGELOG.md"
+urls.Homepage = "https://github.com/socialpyre/posthole"
+urls.Issues = "https://github.com/socialpyre/posthole/issues"
+urls.Source = "https://github.com/socialpyre/posthole"
+scripts.posthole = "posthole.__main__:main"
 
 [dependency-groups]
 dev = [
@@ -57,10 +57,10 @@ dev = [
 # These files are gitignored (built by pnpm assets:build) but must ship in the
 # wheel so the installed package is self-contained.
 build.artifacts = [
-  "src/postpit/static/app.js",
-  "src/postpit/static/app.css",
+  "src/posthole/static/app.js",
+  "src/posthole/static/app.css",
 ]
-build.targets.wheel.packages = [ "src/postpit" ]
+build.targets.wheel.packages = [ "src/posthole" ]
 
 [tool.uv]
 required-version = ">=0.11"
@@ -107,7 +107,7 @@ lint.ignore = [
 lint.per-file-ignores."src/**/__init__.py" = [ "F401" ]
 lint.per-file-ignores."tests/**/*.py" = [ "S101" ]
 lint.flake8-tidy-imports.ban-relative-imports = "all"
-lint.isort.known-first-party = [ "postpit" ]
+lint.isort.known-first-party = [ "posthole" ]
 
 [tool.ty]
 src.include = [ "src", "tests" ]

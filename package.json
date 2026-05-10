@@ -1,12 +1,12 @@
 {
-  "name": "postpit-assets",
+  "name": "posthole-assets",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node ui/build.mjs",
     "watch": "node ui/build.mjs --watch",
-    "css:build": "tailwindcss -i ui/styles.css -o src/postpit/static/app.css --minify",
-    "css:watch": "tailwindcss -i ui/styles.css -o src/postpit/static/app.css --watch",
+    "css:build": "tailwindcss -i ui/styles.css -o src/posthole/static/app.css --minify",
+    "css:watch": "tailwindcss -i ui/styles.css -o src/posthole/static/app.css --watch",
     "assets:build": "run-p build css:build",
     "assets:watch": "run-p watch css:watch",
     "typecheck": "tsc --noEmit",

@@ -1,7 +1,7 @@
-# postpit
+# posthole
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-[![CI](https://github.com/socialpyre/postpit/actions/workflows/ci.yml/badge.svg)](https://github.com/socialpyre/postpit/actions/workflows/ci.yml)
+[![CI](https://github.com/socialpyre/posthole/actions/workflows/ci.yml/badge.svg)](https://github.com/socialpyre/posthole/actions/workflows/ci.yml)
 
 > [!WARNING]
 > **Pre-release / alpha.** APIs and UI may break without notice.
@@ -9,7 +9,7 @@
 
 **Local mock server for social media platform APIs - auth, publishing, the lot.**
 
-postpit is a developer tool that stands in for real social media platform APIs so
+posthole is a developer tool that stands in for real social media platform APIs so
 you can build and test integrations end-to-end on your laptop. Run it next to your
 app, point your code at `127.0.0.1:5176` instead of the real provider, and an
 inbox-style UI shows every post you've published alongside the complete HTTP
@@ -41,14 +41,14 @@ and Threads), and richer device-preview frames.
 **Docker (recommended):**
 
 ```bash
-docker run --rm -p 5176:5176 ghcr.io/socialpyre/postpit:latest
+docker run --rm -p 5176:5176 ghcr.io/socialpyre/posthole:latest
 # → http://127.0.0.1:5176
 ```
 
 **As a uv tool (once published to PyPI):**
 
 ```bash
-uvx postpit
+uvx posthole
 # → http://127.0.0.1:5176
 ```
 
@@ -64,8 +64,8 @@ uvx postpit
 ### Clone, install, run
 
 ```bash
-git clone https://github.com/socialpyre/postpit
-cd postpit
+git clone https://github.com/socialpyre/posthole
+cd posthole
 make install            # uv sync + pnpm install
 make dev                # server + asset watchers + browser auto-reload
 ```
@@ -90,7 +90,7 @@ the workflow.
 | `make typecheck`  | `ty check` (Python) + `tsc --noEmit` (TypeScript)                      |
 | `make check`      | Everything CI runs (lint + typecheck + test)                           |
 | `make build`      | Build wheel + sdist into `dist/`                                       |
-| `make docker`     | Build the Docker image locally as `postpit:dev`                        |
+| `make docker`     | Build the Docker image locally as `posthole:dev`                       |
 | `make docker-run` | Run the locally built image                                            |
 
 ### Live reload
@@ -99,10 +99,10 @@ the workflow.
 single Ctrl-C tears them all down):
 
 - **`fastapi dev`** restarts the server on `.py` / `.toml` edits via `watchfiles`.
-- **esbuild `--watch`** rebuilds `src/postpit/static/app.js` on `.ts` edits.
-- **`tailwindcss --watch`** rebuilds `src/postpit/static/app.css` on template / CSS edits.
+- **esbuild `--watch`** rebuilds `src/posthole/static/app.js` on `.ts` edits.
+- **`tailwindcss --watch`** rebuilds `src/posthole/static/app.css` on template / CSS edits.
 - [`arel`](https://pypi.org/project/arel/) is mounted on `/hot-reload` (gated by
-  `POSTPIT_DEV_RELOAD=1`) and reloads the browser when watched files change.
+  `POSTHOLE_DEV_RELOAD=1`) and reloads the browser when watched files change.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full development workflow,
 commit conventions, and release process.

@@ -33,9 +33,9 @@ junit.xml
 node_modules/
 
 # Generated assets (rebuilt by `make assets`)
-src/postpit/static/app.js
-src/postpit/static/app.js.map
-src/postpit/static/app.css
+src/posthole/static/app.js
+src/posthole/static/app.js.map
+src/posthole/static/app.css
 
 # Environment files
 .env

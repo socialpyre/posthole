@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus";
 
 type Choice = "light" | "dark" | "system";
 const ORDER: Choice[] = ["light", "dark", "system"];
-const KEY = "postpit:theme";
+const KEY = "posthole:theme";
 
 export default class extends Controller<HTMLElement> {
   private mql?: MediaQueryList;

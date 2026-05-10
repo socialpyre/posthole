@@ -9,7 +9,7 @@
 *.woff2 binary
 
 # Mark generated assets so GitHub linguist doesn't count them.
-src/postpit/static/app.js linguist-generated=true
-src/postpit/static/app.css linguist-generated=true
+src/posthole/static/app.js linguist-generated=true
+src/posthole/static/app.css linguist-generated=true
 uv.lock linguist-generated=true
 pnpm-lock.yaml linguist-generated=true

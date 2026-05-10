@@ -2,7 +2,7 @@
 
 Jinja templates rendered through `fastapi-hotwire` (`HotwireTemplates` =
 Starlette `Jinja2Templates` + a flash context processor + Turbo block helpers).
-Loader and entrypoint live in `src/postpit/web/templates.py`.
+Loader and entrypoint live in `src/posthole/web/templates.py`.
 
 ## Layout
 
@@ -31,7 +31,7 @@ turn any user-supplied variable into an XSS sink.
 
 **Block contract.** `layouts/app.html.j2` exposes:
 
-- `{% block title %}` — `<title>` content. Defaults to `postpit`.
+- `{% block title %}` — `<title>` content. Defaults to `posthole`.
 - `{% block main %}` — primary content slot, rendered inside the layout's
   `<main class="flex-1 min-w-0">`.
 
@@ -52,7 +52,7 @@ underscore-prefix convention from other ecosystems.
 
 ## Adding custom filters and globals
 
-Edit `src/postpit/web/templates.py`. After `HotwireTemplates(...)` is
+Edit `src/posthole/web/templates.py`. After `HotwireTemplates(...)` is
 constructed, attach to `templates.env.filters[...]` and
 `templates.env.globals[...]`. That function is the single home for
 template-environment configuration.

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@source "../src/postpit/templates";
+@source "../src/posthole/templates";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
@@ -95,11 +95,11 @@ button:not(:disabled) {
 }
 
 @media (max-width: 1023px) {
-  [data-postpit-sidebar] {
+  [data-posthole-sidebar] {
     transform: translateX(-100%);
     transition: transform 0.15s ease;
   }
-  html[data-drawer-open] [data-postpit-sidebar] {
+  html[data-drawer-open] [data-posthole-sidebar] {
     transform: translateX(0);
   }
 }
@@ -108,10 +108,10 @@ html[data-drawer-open] [data-drawer-overlay] {
 }
 
 @media (min-width: 1024px) {
-  [data-postpit-sidebar] {
+  [data-posthole-sidebar] {
     transition: width 0.15s ease;
   }
-  html[data-sidebar-collapsed] [data-postpit-sidebar] {
+  html[data-sidebar-collapsed] [data-posthole-sidebar] {
     width: 52px;
   }
   html[data-sidebar-collapsed] [data-collapse-hide] {
@@ -120,7 +120,7 @@ html[data-drawer-open] [data-drawer-overlay] {
   html[data-sidebar-collapsed] [data-collapse-show] {
     display: inline-flex;
   }
-  html[data-sidebar-collapsed] [data-postpit-sidebar] nav a {
+  html[data-sidebar-collapsed] [data-posthole-sidebar] nav a {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;

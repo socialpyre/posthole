@@ -1,6 +1,6 @@
 """Smoke tests for template path resolution."""
 
-from postpit.web.templates import build_templates
+from posthole.web.templates import build_templates
 
 
 def test_app_layout_resolves() -> None:

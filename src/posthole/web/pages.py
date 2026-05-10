@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi_hotwire import HotwireTemplates
 
-from postpit.config import get_settings
+from posthole.config import get_settings
 
 
 def build_router(templates: HotwireTemplates) -> APIRouter:

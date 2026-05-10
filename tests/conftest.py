@@ -1,11 +1,11 @@
-"""Shared pytest fixtures for the postpit test suite."""
+"""Shared pytest fixtures for the posthole test suite."""
 
 from collections.abc import AsyncIterator
 
 import httpx
 import pytest_asyncio
 
-from postpit.main import app
+from posthole.main import app
 
 
 @pytest_asyncio.fixture

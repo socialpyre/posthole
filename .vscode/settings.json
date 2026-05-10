@@ -76,9 +76,9 @@
   "search.exclude": {
     "pnpm-lock.yaml": true,
     "uv.lock": true,
-    "src/postpit/static/app.js": true,
-    "src/postpit/static/app.js.map": true,
-    "src/postpit/static/app.css": true
+    "src/posthole/static/app.js": true,
+    "src/posthole/static/app.js.map": true,
+    "src/posthole/static/app.css": true
   },
 
   "python.analysis.typeCheckingMode": "off",

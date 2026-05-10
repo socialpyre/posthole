@@ -1,10 +1,10 @@
 # Contributing
 
-Thanks for your interest in postpit. This is an early-stage project; expect rough edges.
+Thanks for your interest in posthole. This is an early-stage project; expect rough edges.
 
 ## Supported platforms
 
-postpit's CI matrix covers Linux and macOS on Python 3.12, 3.13, and 3.14.
+posthole's CI matrix covers Linux and macOS on Python 3.12, 3.13, and 3.14.
 Windows is not actively tested; patches that keep it working are welcome but
 not required.
 
@@ -17,15 +17,15 @@ You need:
 - Node 22 + pnpm 11 (via `corepack enable`)
 
 ```bash
-git clone https://github.com/socialpyre/postpit
-cd postpit
+git clone https://github.com/socialpyre/posthole
+cd posthole
 make install            # uv sync + pnpm install
 uv run pre-commit install
 ```
 
 ### Configuration
 
-postpit's env-var contract is schema-driven via [varlock](https://varlock.dev).
+posthole's env-var contract is schema-driven via [varlock](https://varlock.dev).
 The committed `.env.schema` declares every supported variable with its type and
 validation rules. To override defaults locally, create a gitignored `.env.local`:
 
@@ -47,7 +47,7 @@ To debug what varlock would inject, run `pnpm exec varlock load`.
 If your machine has a private Python index (AWS CodeArtifact, JFrog, GitHub
 Packages, Azure Artifacts, etc.) configured via `~/.config/uv/uv.toml`,
 `~/.config/pip/pip.conf`, or environment variables, export these in your shell
-before working on postpit so that `uv`, `pip`, and pre-commit all resolve from
+before working on posthole so that `uv`, `pip`, and pre-commit all resolve from
 public PyPI:
 
 ```bash
@@ -66,7 +66,7 @@ private-index URLs from accidentally landing in committed files.
 | ---------------- | -------------------------------------------------------------------------------- |
 | `make dev`       | Run the FastAPI dev server + JS/CSS watchers + browser auto-reload (via varlock) |
 | `make run`       | Run the server only, no watchers (via varlock)                                   |
-| `make assets`    | One-shot rebuild of `src/postpit/static/{app.js,app.css}`                        |
+| `make assets`    | One-shot rebuild of `src/posthole/static/{app.js,app.css}`                       |
 | `make test`      | Run pytest                                                                       |
 | `make lint`      | `ruff check` + `ruff format --check`                                             |
 | `make typecheck` | `ty check` (Python) + `tsc --noEmit` (TypeScript)                                |
@@ -81,10 +81,10 @@ Run `make check` before pushing — it mirrors what CI will run.
 `make dev` starts three watchers under one shell:
 
 - `fastapi dev` (uvicorn `--reload`) restarts the server on `.py` / `.toml` edits.
-- `esbuild --watch` rebuilds `src/postpit/static/app.js` on `.ts` edits.
-- `tailwindcss --watch` rebuilds `src/postpit/static/app.css` on template / CSS edits.
+- `esbuild --watch` rebuilds `src/posthole/static/app.js` on `.ts` edits.
+- `tailwindcss --watch` rebuilds `src/posthole/static/app.css` on template / CSS edits.
 - [`arel`](https://pypi.org/project/arel/) is mounted as a dev-only WebSocket route at
-  `/hot-reload`. The base template injects a `<script>` (gated by `POSTPIT_DEV_RELOAD=1`)
+  `/hot-reload`. The base template injects a `<script>` (gated by `POSTHOLE_DEV_RELOAD=1`)
   that listens to that socket and reloads the browser when watched files change.
 
 A single Ctrl-C kills all four; the `Makefile` uses `trap 'kill 0' EXIT`.

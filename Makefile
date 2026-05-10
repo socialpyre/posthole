@@ -31,11 +31,11 @@ assets: ## one-shot build of JS + CSS
 dev: assets ## run server + asset watchers concurrently with browser auto-reload
 	@trap 'kill 0; exit 0' INT TERM EXIT; \
 	pnpm run assets:watch & \
-	$(VARLOCK) env POSTPIT_DEV_RELOAD=1 uv run fastapi dev src/postpit/main.py --port 5176 & \
+	$(VARLOCK) env POSTHOLE_DEV_RELOAD=1 uv run fastapi dev src/posthole/main.py --port 5176 & \
 	wait
 
 run: assets ## run server (no watchers; uses .env.schema + .env.local values)
-	$(VARLOCK) uv run python -m postpit
+	$(VARLOCK) uv run python -m posthole
 
 test: ## run pytest
 	uv run pytest
@@ -60,10 +60,10 @@ build: assets ## build wheel + sdist
 	uv build --no-sources
 
 docker: ## build docker image locally
-	docker build -t postpit:dev .
+	docker build -t posthole:dev .
 
 docker-run: ## run the locally built image
-	docker run --rm -p 5176:5176 postpit:dev
+	docker run --rm -p 5176:5176 posthole:dev
 
 clean: ## wipe build + asset output
-	rm -rf dist src/postpit/static/app.js src/postpit/static/app.js.map src/postpit/static/app.css
+	rm -rf dist src/posthole/static/app.js src/posthole/static/app.js.map src/posthole/static/app.css

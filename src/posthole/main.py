@@ -1,4 +1,4 @@
-"""FastAPI application factory and ASGI lifespan for postpit."""
+"""FastAPI application factory and ASGI lifespan for posthole."""
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -8,10 +8,10 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.routing import WebSocketRoute
 
-from postpit import __version__
-from postpit.config import get_settings
-from postpit.web import pages, system
-from postpit.web.templates import TEMPLATES_DIR, build_templates
+from posthole import __version__
+from posthole.config import get_settings
+from posthole.web import pages, system
+from posthole.web.templates import TEMPLATES_DIR, build_templates
 
 PKG = Path(__file__).parent
 templates = build_templates()
@@ -19,7 +19,7 @@ templates = build_templates()
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Mount the dev hot-reload watcher when ``POSTPIT_DEV_RELOAD=1``."""
+    """Mount the dev hot-reload watcher when ``POSTHOLE_DEV_RELOAD=1``."""
     settings = get_settings()
 
     if settings.dev_reload:
@@ -49,11 +49,11 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    """Build and return the postpit FastAPI application."""
+    """Build and return the posthole FastAPI application."""
     settings = get_settings()
 
     app = FastAPI(
-        title="postpit",
+        title="posthole",
         version=__version__,
         lifespan=lifespan,
         docs_url="/docs" if settings.docs_enabled else None,

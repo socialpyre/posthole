@@ -4,13 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>{% block title %}postpit{% endblock %}</title>
+    <title>{% block title %}posthole{% endblock %}</title>
 
     <script>
       (function () {
         var c = "light";
         try {
-          c = localStorage.getItem("postpit:theme") || "light";
+          c = localStorage.getItem("posthole:theme") || "light";
         } catch (e) {}
         var dark =
           c === "dark" ||
@@ -19,7 +19,7 @@
         h.setAttribute("data-theme", dark ? "dark" : "light");
         h.setAttribute("data-theme-choice", c);
         try {
-          if (localStorage.getItem("postpit:sidebar-collapsed") === "1") {
+          if (localStorage.getItem("posthole:sidebar-collapsed") === "1") {
             h.setAttribute("data-sidebar-collapsed", "");
           }
         } catch (e) {}

@@ -1,4 +1,4 @@
-"""Runtime configuration loaded from ``POSTPIT_*`` environment variables."""
+"""Runtime configuration loaded from ``POSTHOLE_*`` environment variables."""
 
 from functools import lru_cache
 
@@ -6,9 +6,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Process-wide settings; override any field via the ``POSTPIT_<NAME>`` env var."""
+    """Process-wide settings; override any field via the ``POSTHOLE_<NAME>`` env var."""
 
-    model_config = SettingsConfigDict(env_prefix="POSTPIT_", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="POSTHOLE_", extra="ignore")
 
     database_url: str = ":memory:"
     dev_reload: bool = False

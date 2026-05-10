@@ -16,9 +16,9 @@ build/
 node_modules/
 
 # Generated assets (rebuilt inside the build stage)
-src/postpit/static/app.js
-src/postpit/static/app.js.map
-src/postpit/static/app.css
+src/posthole/static/app.js
+src/posthole/static/app.js.map
+src/posthole/static/app.css
 
 # Docs / tests / markdown not needed in image
 docs/
