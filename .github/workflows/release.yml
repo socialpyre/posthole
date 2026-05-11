@@ -20,17 +20,11 @@ jobs:
       packages: read
 
   release:
-    name: semantic-release + publish
+    name: semantic-release
     needs: ci
     runs-on: ubuntu-latest
     permissions:
       contents: write # PSR commits version bump + tag
-      id-token: write # PyPI Trusted Publishing OIDC + GHCR attestations
-      packages: write # GHCR push
-      attestations: write # Docker provenance + SBOM
-    environment:
-      name: pypi
-      url: https://pypi.org/p/posthole
     outputs:
       released: ${{ steps.release.outputs.released }}
       version: ${{ steps.release.outputs.version }}
@@ -69,23 +63,53 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           build: true
 
-      - name: Publish to PyPI
+      - name: Upload release dist
         if: steps.release.outputs.released == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-dist
+          path: dist/
+          retention-days: 7
+
+  publish:
+    name: publish
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # PSR publish-action attaches dist to GH Release
+      id-token: write # PyPI Trusted Publishing OIDC + GHCR attestations
+      packages: write # GHCR push
+      attestations: write # Docker provenance + SBOM
+    environment:
+      name: pypi
+      url: https://pypi.org/p/posthole
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Download release dist
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: release-dist
+          path: dist/
+
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         with:
           packages-dir: dist/
           attestations: true
 
       - name: Set up QEMU
-        if: steps.release.outputs.released == 'true'
         uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
 
       - name: Set up Docker buildx
-        if: steps.release.outputs.released == 'true'
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
       - name: Login to GHCR
-        if: steps.release.outputs.released == 'true'
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
@@ -94,17 +118,15 @@ jobs:
 
       - name: Docker image metadata
         id: meta
-        if: steps.release.outputs.released == 'true'
         uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
         with:
           images: ghcr.io/socialpyre/posthole
           tags: |
-            type=raw,value=${{ steps.release.outputs.version }}
-            type=raw,value=${{ steps.release.outputs.tag }}
+            type=raw,value=${{ needs.release.outputs.version }}
+            type=raw,value=${{ needs.release.outputs.tag }}
             type=raw,value=latest
 
       - name: Build & push image
-        if: steps.release.outputs.released == 'true'
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -118,8 +140,7 @@ jobs:
           sbom: true
 
       - name: Attach distribution to GitHub Release
-        if: steps.release.outputs.released == 'true'
         uses: python-semantic-release/publish-action@310a9983a0ae878b29f3aac778d7c77c1db27378 # v10.5.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.release.outputs.tag }}
+          tag: ${{ needs.release.outputs.tag }}
