@@ -3,13 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node ui/build.mjs",
-    "watch": "node ui/build.mjs --watch",
-    "css:build": "tailwindcss -i ui/styles.css -o src/posthole/static/app.css --minify",
-    "css:watch": "tailwindcss -i ui/styles.css -o src/posthole/static/app.css --watch",
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "css:build": "tailwindcss -i src/posthole/ui/styles.css -o src/posthole/static/app.css --minify",
+    "css:watch": "tailwindcss -i src/posthole/ui/styles.css -o src/posthole/static/app.css --watch",
     "assets:build": "run-p build css:build",
     "assets:watch": "run-p watch css:watch",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -19,13 +21,16 @@
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "esbuild": "^0.28.0",
+    "jsdom": "^29.1.1",
     "npm-run-all2": "^8.0.4",
     "prettier": "^3.8.3",
     "prettier-plugin-jinja-template": "^2.2.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.0",
-    "varlock": "^1.1.0"
+    "varlock": "^1.1.0",
+    "vitest": "^4.1.5"
   },
   "packageManager": "pnpm@11.0.9"
 }

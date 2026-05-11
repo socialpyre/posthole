@@ -1,0 +1,3 @@
+web: pnpm exec varlock run -- env POSTHOLE_DEV_RELOAD=1 uv run fastapi dev src/posthole/main.py --port 5176
+esbuild: node scripts/build.mjs --watch
+tailwind: sleep 999999 | pnpm exec tailwindcss -i src/posthole/ui/styles.css -o src/posthole/static/app.css --watch

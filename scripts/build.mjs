@@ -3,7 +3,7 @@ import * as esbuild from "esbuild";
 const watch = process.argv.includes("--watch");
 
 const options = {
-  entryPoints: ["ui/main.ts"],
+  entryPoints: ["src/posthole/ui/main.ts"],
   bundle: true,
   format: "esm",
   target: "es2022",
@@ -16,7 +16,7 @@ const options = {
 if (watch) {
   const ctx = await esbuild.context(options);
   await ctx.watch();
-  console.log("esbuild: watching ui/main.ts → src/posthole/static/app.js");
+  console.log("esbuild: watching src/posthole/ui/main.ts → src/posthole/static/app.js");
 } else {
   await esbuild.build(options);
 }

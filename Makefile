@@ -1,6 +1,3 @@
-# Use bash for `trap 'kill 0' EXIT` semantics in `make dev`.
-SHELL := /bin/bash
-
 .PHONY: help install dev run assets test lint format typecheck check build docker docker-run clean
 
 # varlock injects schema-validated env vars from .env.schema (+ optional .env.local)
@@ -29,16 +26,14 @@ assets: ## one-shot build of JS + CSS
 	pnpm run assets:build
 
 dev: assets ## run server + asset watchers concurrently with browser auto-reload
-	@trap 'kill 0; exit 0' INT TERM EXIT; \
-	pnpm run assets:watch & \
-	$(VARLOCK) env POSTHOLE_DEV_RELOAD=1 uv run fastapi dev src/posthole/main.py --port 5176 & \
-	wait
+	uv run honcho -f Procfile.dev start
 
 run: assets ## run server (no watchers; uses .env.schema + .env.local values)
 	$(VARLOCK) uv run python -m posthole
 
-test: ## run pytest
+test: ## run pytest + vitest
 	uv run pytest
+	pnpm test
 
 lint: ## ruff check + format-check + prettier --check
 	uv run ruff check .

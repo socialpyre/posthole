@@ -13,7 +13,8 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
 COPY tsconfig.json ./
-COPY ui/ ./ui/
+COPY scripts/ ./scripts/
+COPY src/posthole/ui/ ./src/posthole/ui/
 COPY src/posthole/templates/ ./src/posthole/templates/
 
 RUN pnpm run typecheck && pnpm run assets:build
