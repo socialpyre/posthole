@@ -67,8 +67,9 @@ private-index URLs from accidentally landing in committed files.
 | `make dev`       | Run the FastAPI dev server + JS/CSS watchers + browser auto-reload (via varlock) |
 | `make run`       | Run the server only, no watchers (via varlock)                                   |
 | `make assets`    | One-shot rebuild of `src/posthole/static/{app.js,app.css}`                       |
-| `make test`      | Run pytest                                                                       |
-| `make lint`      | `ruff check` + `ruff format --check`                                             |
+| `make test`      | Run pytest + vitest                                                              |
+| `make lint`      | `ruff check` + `ruff format --check` + `prettier --check`                        |
+| `make format`    | `ruff format` + `ruff check --fix` + `prettier --write`                          |
 | `make typecheck` | `ty check` (Python) + `tsc --noEmit` (TypeScript)                                |
 | `make check`     | Everything CI runs (lint + typecheck + test)                                     |
 | `make build`     | Build wheel + sdist                                                              |
@@ -78,7 +79,8 @@ Run `make check` before pushing — it mirrors what CI will run.
 
 ## Live reload
 
-`make dev` starts three watchers under one shell:
+`make dev` runs the processes declared in [`Procfile.dev`](./Procfile.dev) under
+[`honcho`](https://honcho.readthedocs.io/):
 
 - `fastapi dev` (uvicorn `--reload`) restarts the server on `.py` / `.toml` edits.
 - `esbuild --watch` rebuilds `src/posthole/static/app.js` on `.ts` edits.
@@ -87,7 +89,7 @@ Run `make check` before pushing — it mirrors what CI will run.
   `/hot-reload`. The base template injects a `<script>` (gated by `POSTHOLE_DEV_RELOAD=1`)
   that listens to that socket and reloads the browser when watched files change.
 
-A single Ctrl-C kills all four; the `Makefile` uses `trap 'kill 0' EXIT`.
+A single Ctrl-C tells honcho to terminate every child process.
 
 ## Commit conventions
 

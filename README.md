@@ -85,8 +85,9 @@ the workflow.
 | `make dev`        | Run FastAPI server + esbuild + Tailwind watchers + browser auto-reload |
 | `make run`        | Run the FastAPI server only (no watchers), with varlock-injected env   |
 | `make assets`     | One-shot rebuild of `app.js` + `app.css`                               |
-| `make test`       | Run pytest                                                             |
-| `make lint`       | `ruff check` + `ruff format --check`                                   |
+| `make test`       | Run pytest + vitest                                                    |
+| `make lint`       | `ruff check` + `ruff format --check` + `prettier --check`              |
+| `make format`     | `ruff format` + `ruff check --fix` + `prettier --write`                |
 | `make typecheck`  | `ty check` (Python) + `tsc --noEmit` (TypeScript)                      |
 | `make check`      | Everything CI runs (lint + typecheck + test)                           |
 | `make build`      | Build wheel + sdist into `dist/`                                       |
@@ -95,8 +96,9 @@ the workflow.
 
 ### Live reload
 
-`make dev` starts three watchers under one shell (`trap 'kill 0' EXIT` so a
-single Ctrl-C tears them all down):
+`make dev` runs the processes declared in [`Procfile.dev`](./Procfile.dev) under
+[`honcho`](https://honcho.readthedocs.io/), so a single Ctrl-C tears them all
+down:
 
 - **`fastapi dev`** restarts the server on `.py` / `.toml` edits via `watchfiles`.
 - **esbuild `--watch`** rebuilds `src/posthole/static/app.js` on `.ts` edits.
