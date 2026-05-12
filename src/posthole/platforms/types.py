@@ -12,16 +12,16 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable
 
     import httpx
-    from fastapi import APIRouter
+    from fastapi import APIRouter, FastAPI
     from fastapi_hotwire import HotwireTemplates
 
 
 class PlatformModule(Protocol):
     """Structural type each platform package must expose at module scope.
 
-    ``build_router`` and ``seed_flow`` are declared as :func:`staticmethod`
-    so ty matches them against module-level ``def`` functions (which take
-    no ``self``).
+    ``build_router``, ``seed_flow``, and ``install_exception_handlers`` are
+    declared as :func:`staticmethod` so ty matches them against module-level
+    ``def`` functions (which take no ``self``).
 
     Router-mounting contract (see :mod:`posthole.main`):
 
@@ -31,6 +31,13 @@ class PlatformModule(Protocol):
     - If two platforms would mount the same wildcard shape, the second one
       MUST namespace its route (e.g. ``/threads-containers/{id}``); silently
       relying on registration order is forbidden.
+
+    Exception-handling contract:
+
+    - ``install_exception_handlers(app)`` registers one or more FastAPI
+      exception handlers that convert this platform's exception base
+      (e.g. ``MetaAPIError``) into its wire envelope. ``main.py`` iterates
+      ``PLATFORMS`` and calls this once per platform at app construction.
     """
 
     name: str
@@ -40,3 +47,6 @@ class PlatformModule(Protocol):
 
     @staticmethod
     def seed_flow(client: httpx.AsyncClient) -> Awaitable[int]: ...
+
+    @staticmethod
+    def install_exception_handlers(app: FastAPI) -> None: ...

@@ -9,6 +9,10 @@ accepts chunks, validates ``Content-Range`` is present, and discards.
     POST /post/publish/status/fetch/ → flip post to published; return PUBLISH_COMPLETE
 
 All paths shown post-strip (real clients send ``/v2/post/...``).
+
+Handlers raise platform-specific exceptions from
+:mod:`posthole.platforms.tiktok.exceptions`; the central handler converts
+them to TikTok dual-envelope JSON.
 """
 
 from __future__ import annotations
@@ -19,13 +23,17 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Body, Header, Request
 
 from posthole.db import DbDep  # noqa: TC001 — runtime-evaluated by FastAPI Depends
-from posthole.platforms.tiktok._bearer import strip_bearer
-from posthole.platforms.tiktok.responses import tiktok_envelope, tiktok_error
+from posthole.platforms.tiktok.auth import require_bearer
+from posthole.platforms.tiktok.exceptions import InvalidParamError, PublishNotFoundError
+from posthole.platforms.tiktok.responses import (
+    TIKTOK_ERROR_RESPONSES,
+    tiktok_envelope,
+)
 
 
 def build_router() -> APIRouter:
     """Return an :class:`APIRouter` with the TikTok publishing endpoints."""
-    router = APIRouter(tags=["tiktok-publishing"])
+    router = APIRouter(tags=["tiktok-publishing"], responses=TIKTOK_ERROR_RESPONSES)
 
     @router.post("/post/publish/video/init/")
     async def init_video(
@@ -33,24 +41,16 @@ def build_router() -> APIRouter:
         db: DbDep,
         body: Annotated[dict[str, Any], Body()],
         authorization: Annotated[str, Header()] = "",
-    ):
+    ) -> dict[str, Any]:
         """Create a publish container; return ``publish_id`` + (for FILE_UPLOAD) ``upload_url``."""
-        bearer = strip_bearer(authorization)
-        tok = db.oauth.get_token(bearer) if bearer else None
-        if tok is None:
-            return tiktok_error(
-                http_status=401, code="access_token_invalid", message="Invalid access token"
-            )
+        tok = require_bearer(db, authorization)
 
         post_info = body.get("post_info", {}) or {}
         source_info = body.get("source_info", {}) or {}
         source = source_info.get("source")
         if source not in ("FILE_UPLOAD", "PULL_FROM_URL"):
-            return tiktok_error(
-                http_status=400,
-                code="invalid_param",
-                message=f"source_info.source must be FILE_UPLOAD or PULL_FROM_URL (got {source!r})",
-            )
+            msg = f"source_info.source must be FILE_UPLOAD or PULL_FROM_URL (got {source!r})"
+            raise InvalidParamError(msg)
 
         publish_id = f"v_pub_{secrets.token_urlsafe(20)}"
         media_url = source_info.get("video_url") if source == "PULL_FROM_URL" else "uploading"
@@ -79,19 +79,15 @@ def build_router() -> APIRouter:
         request: Request,
         db: DbDep,
         content_range: Annotated[str, Header()] = "",
-    ):
+    ) -> dict[str, Any]:
         """Accept chunk bytes, validate Content-Range header is present, discard body."""
         if not content_range:
-            return tiktok_error(
-                http_status=400,
-                code="invalid_param",
-                message="Content-Range header is required for chunked upload",
-            )
+            msg = "Content-Range header is required for chunked upload"
+            raise InvalidParamError(msg)
         post = db.posts.get_by_external_ref(publish_id)
         if post is None or post.platform != "tiktok":
-            return tiktok_error(
-                http_status=404, code="invalid_param", message=f"Unknown publish_id {publish_id!r}"
-            )
+            msg = f"Unknown publish_id {publish_id!r}"
+            raise PublishNotFoundError(msg)
         # Drain the body without buffering — we don't store it. Iterate the
         # chunks so very large uploads don't pin memory.
         async for _ in request.stream():
@@ -103,23 +99,17 @@ def build_router() -> APIRouter:
         db: DbDep,
         body: Annotated[dict[str, Any], Body()],
         authorization: Annotated[str, Header()] = "",
-    ):
+    ) -> dict[str, Any]:
         """Look up the publish, flip to published, return PUBLISH_COMPLETE state."""
-        bearer = strip_bearer(authorization)
-        if not bearer or db.oauth.get_token(bearer) is None:
-            return tiktok_error(
-                http_status=401, code="access_token_invalid", message="Invalid access token"
-            )
+        require_bearer(db, authorization)
         publish_id = body.get("publish_id", "")
         if not publish_id:
-            return tiktok_error(
-                http_status=400, code="invalid_param", message="publish_id is required"
-            )
+            msg = "publish_id is required"
+            raise InvalidParamError(msg)
         post = db.posts.get_by_external_ref(publish_id)
         if post is None or post.platform != "tiktok":
-            return tiktok_error(
-                http_status=404, code="invalid_param", message=f"Unknown publish_id {publish_id!r}"
-            )
+            msg = f"Unknown publish_id {publish_id!r}"
+            raise PublishNotFoundError(msg)
 
         # Mint a TikTok-shaped post id (numeric-ish) and flip to published if not already.
         if post.status != "published":

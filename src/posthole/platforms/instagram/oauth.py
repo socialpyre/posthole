@@ -12,10 +12,9 @@ Modeled after the Meta Graph OAuth flow. Real clients follow this sequence:
 Tokens carry no platform field — the same OAuth state tables could serve any
 future platform. The ``mock-short-`` / ``mock-long-`` prefixes are cosmetic.
 
-Handlers omit explicit return type annotations: their happy path returns a
-dict (FastAPI serializes it) while error paths return a Meta-shaped
-``JSONResponse`` via :func:`meta_error`. A return-type union would obscure
-more than it documents.
+Handlers raise platform-specific exceptions from
+:mod:`posthole.platforms.instagram.exceptions`; the central exception
+handler converts them to Meta-shaped JSON envelopes.
 """
 
 from __future__ import annotations
@@ -28,7 +27,15 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from posthole.db import DbDep  # noqa: TC001 — runtime-evaluated by FastAPI Depends
 from posthole.platforms.helpers import is_safe_redirect_uri
-from posthole.platforms.instagram.responses import meta_error
+from posthole.platforms.instagram.auth import require_oauth_token
+from posthole.platforms.instagram.exceptions import (
+    AccountNotFoundError,
+    InvalidAuthCodeError,
+    InvalidLongLivedTokenError,
+    InvalidRedirectUriError,
+    UnknownAccountIdError,
+)
+from posthole.platforms.instagram.responses import META_ERROR_RESPONSES
 
 if TYPE_CHECKING:
     from fastapi_hotwire import HotwireTemplates
@@ -40,7 +47,7 @@ LONG_TOKEN_EXPIRES_IN = 5_184_000
 
 def build_router(templates: HotwireTemplates) -> APIRouter:
     """Return an :class:`APIRouter` with the Instagram OAuth endpoints."""
-    router = APIRouter(tags=["instagram-oauth"])
+    router = APIRouter(tags=["instagram-oauth"], responses=META_ERROR_RESPONSES)
 
     @router.get("/oauth/authorize", response_class=HTMLResponse)
     async def authorize_get(
@@ -71,21 +78,13 @@ def build_router(templates: HotwireTemplates) -> APIRouter:
         account_id: Annotated[str, Form()],
         redirect_uri: Annotated[str, Form()],
         state: Annotated[str, Form()] = "",
-    ):
+    ) -> RedirectResponse:
         """Issue an auth code, redirect back to the client's ``redirect_uri``."""
         if not is_safe_redirect_uri(redirect_uri):
-            return meta_error(
-                status=400,
-                message="redirect_uri must be a loopback http(s) URL",
-                error_type="OAuthException",
-                code=100,
-            )
+            raise InvalidRedirectUriError
         if db.accounts.get(account_id) is None:
-            return meta_error(
-                status=400,
-                message=f"Unknown account_id {account_id!r}",
-                code=100,
-            )
+            msg = f"Unknown account_id {account_id!r}"
+            raise UnknownAccountIdError(msg)
         code_ctx = db.oauth.issue_code(
             account_id=account_id,
             redirect_uri=redirect_uri,
@@ -103,17 +102,11 @@ def build_router(templates: HotwireTemplates) -> APIRouter:
         client_id: Annotated[str, Form()] = "",  # noqa: ARG001
         client_secret: Annotated[str, Form()] = "",  # noqa: ARG001
         redirect_uri: Annotated[str, Form()] = "",  # noqa: ARG001
-    ):
+    ) -> dict[str, str]:
         """Exchange a one-shot code for a short-lived access token."""
         ctx = db.oauth.consume_code(code)
         if ctx is None:
-            return meta_error(
-                status=400,
-                message="Invalid authorization code",
-                error_type="OAuthException",
-                code=100,
-                error_subcode=2207001,
-            )
+            raise InvalidAuthCodeError
         token = db.oauth.issue_token(account_id=ctx.account_id, kind="short")
         return {
             "access_token": token.token,
@@ -127,16 +120,9 @@ def build_router(templates: HotwireTemplates) -> APIRouter:
         access_token: Annotated[str, Query()],
         grant_type: Annotated[str, Query()] = "ig_exchange_token",  # noqa: ARG001
         client_secret: Annotated[str, Query()] = "",  # noqa: ARG001
-    ):
+    ) -> dict[str, str | int]:
         """Exchange a short-lived token for a long-lived (60-day) token."""
-        tok = db.oauth.get_token(access_token)
-        if tok is None:
-            return meta_error(
-                status=400,
-                message="Invalid access token",
-                error_type="OAuthException",
-                code=190,
-            )
+        tok = require_oauth_token(db, access_token)
         new_tok = db.oauth.issue_token(account_id=tok.account_id, kind="long")
         return {
             "access_token": new_tok.token,
@@ -149,16 +135,9 @@ def build_router(templates: HotwireTemplates) -> APIRouter:
         db: DbDep,
         access_token: Annotated[str, Query()],
         grant_type: Annotated[str, Query()] = "ig_refresh_token",  # noqa: ARG001
-    ):
+    ) -> dict[str, str | int]:
         """Rotate a long-lived token. Refuses short-lived tokens."""
-        tok = db.oauth.get_token(access_token)
-        if tok is None or tok.kind != "long":
-            return meta_error(
-                status=400,
-                message="Invalid long-lived access token",
-                error_type="OAuthException",
-                code=190,
-            )
+        tok = require_oauth_token(db, access_token, InvalidLongLivedTokenError, kind="long")
         new_tok = db.oauth.issue_token(account_id=tok.account_id, kind="long")
         return {
             "access_token": new_tok.token,
@@ -171,23 +150,12 @@ def build_router(templates: HotwireTemplates) -> APIRouter:
         db: DbDep,
         access_token: Annotated[str, Query()],
         fields: Annotated[str, Query()] = "",  # noqa: ARG001
-    ):
+    ) -> dict[str, str | None]:
         """Return the authenticated account's IG-shaped profile."""
-        tok = db.oauth.get_token(access_token)
-        if tok is None:
-            return meta_error(
-                status=400,
-                message="Invalid access token",
-                error_type="OAuthException",
-                code=190,
-            )
+        tok = require_oauth_token(db, access_token)
         account = db.accounts.get(tok.account_id)
         if account is None:
-            return meta_error(
-                status=404,
-                message="Account not found",
-                code=803,
-            )
+            raise AccountNotFoundError
         return {
             "user_id": account.id,
             "username": account.username,

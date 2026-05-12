@@ -110,6 +110,7 @@ def create_app() -> FastAPI:
     app.include_router(system.router)
 
     for plat in PLATFORMS:
+        plat.install_exception_handlers(app)
         app.include_router(plat.build_router(templates))
 
     return app
