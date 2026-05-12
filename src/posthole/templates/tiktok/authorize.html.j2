@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Authorize TikTok — posthole</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        max-width: 32rem;
+        margin: 4rem auto;
+        padding: 1.5rem;
+        color: #1a1a1a;
+      }
+      h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
+      .lede { color: #666; margin: 0 0 1.5rem; }
+      form { display: grid; gap: 1rem; }
+      label { display: block; font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem; }
+      select { width: 100%; padding: 0.5rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+      button {
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+        background: #fe2c55;
+        color: white;
+        border: 0;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+      .meta {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+      }
+      .meta code {
+        background: #f4f4f4;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        word-break: break-all;
+      }
+      .meta div { margin: 0.25rem 0; }
+    </style>
+  </head>
+  <body>
+    <h1>Authorize TikTok</h1>
+    <p class="lede">
+      Pick a mock account to authorize. This is a posthole development mock — no real
+      TikTok credentials involved.
+    </p>
+
+    <form method="post" action="/auth/authorize/">
+      <div>
+        <label for="account_id">Account</label>
+        <select name="account_id" id="account_id" required>
+          {% for account in accounts %}
+            <option value="{{ account.id }}">@{{ account.username }} — {{ account.display_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}" />
+      <input type="hidden" name="state" value="{{ state }}" />
+      <button type="submit">Authorize</button>
+    </form>
+
+    <div class="meta">
+      <div><strong>client_key:</strong> <code>{{ client_key }}</code></div>
+      <div><strong>scope:</strong> <code>{{ scope }}</code></div>
+      <div><strong>redirect_uri:</strong> <code>{{ redirect_uri }}</code></div>
+    </div>
+  </body>
+</html>

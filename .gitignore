@@ -50,5 +50,11 @@ src/posthole/static/app.css
 *.swp
 *~
 
+# Default SQLite database (POSTHOLE_DATABASE_URL points here unless overridden).
+# WAL/SHM siblings are sqlite3's bookkeeping for journal_mode=WAL.
+posthole.db
+posthole.db-wal
+posthole.db-shm
+
 # Scratch / local notes
 .scratch/

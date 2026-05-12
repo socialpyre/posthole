@@ -29,10 +29,12 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+  "asgi-correlation-id>=4.3.4",
   "fastapi[standard]>=0.115",
   "fastapi-hotwire>=0.1",
   "jinja2>=3.1",
   "pydantic-settings>=2.6",
+  "structlog>=25.5",
 ]
 urls.Changelog = "https://github.com/socialpyre/posthole/blob/main/CHANGELOG.md"
 urls.Homepage = "https://github.com/socialpyre/posthole"
@@ -109,6 +111,7 @@ lint.ignore = [
   "ISC001", # conflicts with formatter (ruff itself recommends ignore)
 ]
 lint.per-file-ignores."src/**/__init__.py" = [ "F401" ]
+lint.per-file-ignores."src/**/__main__.py" = [ "T201" ]
 lint.per-file-ignores."tests/**/*.py" = [ "S101" ]
 lint.flake8-tidy-imports.ban-relative-imports = "all"
 lint.isort.known-first-party = [ "posthole" ]
