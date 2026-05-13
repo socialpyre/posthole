@@ -58,11 +58,11 @@ repos:
       - id: conventional-pre-commit
         stages: [commit-msg]
 
-  - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.8.3
-    hooks:
-      - id: prettier
-        types_or: [markdown, json, yaml, css, javascript, ts]
+  # Local hook so pre-commit + CI use the same prettier + plugins.
+  # The rbubley/mirrors-prettier mirror is a standalone prettier without
+  # our prettier-plugin-jinja-template, so .html.j2 templates were never
+  # checked locally and CI's pnpm-exec prettier was the only thing
+  # catching jinja-template formatting drift.
 
   - repo: local
     hooks:
@@ -80,6 +80,12 @@ repos:
         entry: >-
           (?i)(\bcodeartifact[\w.-]*\.amazonaws\.com\b|\bpkgs\.dev\.azure\.com/[\w./-]+/_packaging\b|\b[\w.-]+\.pkgs\.visualstudio\.com\b|\bjfrog\.io\b|\bartifactory\.[\w.-]+\b|\bnpm\.pkg\.github\.com\b|\bpypi\.pkg\.github\.com\b)
         exclude: ^(\.pre-commit-config\.yaml|README\.md|CONTRIBUTING\.md|docs/.*)$
+
+      - id: prettier
+        name: prettier
+        entry: pnpm exec prettier --write
+        language: system
+        files: \.(md|json|jsonc|yaml|yml|css|js|jsx|ts|tsx|mjs|cjs|html|j2)$
 
       - id: varlock-load
         name: varlock (load .env.schema)
