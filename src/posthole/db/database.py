@@ -17,13 +17,13 @@ logger = get_logger(__name__)
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from posthole.db.accounts import AccountStore
-    from posthole.db.oauth import OAuthStore
-    from posthole.db.posts import PostStore
-
 
 class Database:
-    """A sqlite3 connection plus the stores that read/write through it.
+    """A sqlite3 connection wrapper — owns the lifecycle and the cursor context.
+
+    DB access is via flat module-level functions in ``posthole.db.{posts,
+    accounts, oauth}``, each taking a ``Database`` as the first arg. This
+    object does NOT host store instances.
 
     Designed for posthole's all-async handler model: every DB call happens on
     the event loop, single-threaded. If a sync route handler is ever added,
@@ -49,15 +49,6 @@ class Database:
             # sqlite rejects WAL on :memory:.
             self._conn.execute(pragmas.ENABLE_WAL)
         self.migrate()
-
-        # Imported here to avoid circular imports (store modules import Database for typing).
-        from posthole.db.accounts import AccountStore
-        from posthole.db.oauth import OAuthStore
-        from posthole.db.posts import PostStore
-
-        self.accounts: AccountStore = AccountStore(self)
-        self.oauth: OAuthStore = OAuthStore(self)
-        self.posts: PostStore = PostStore(self)
 
     def close(self) -> None:
         """Close the underlying sqlite3 connection. Idempotent on shutdown."""

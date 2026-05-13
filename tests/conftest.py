@@ -6,7 +6,7 @@ import httpx
 import pytest
 import pytest_asyncio
 
-from posthole.db import Database, get_db
+from posthole.db import Database, get_db, oauth
 from posthole.main import app
 
 
@@ -25,11 +25,14 @@ def db() -> Iterator[Database]:
 async def client(db: Database) -> AsyncIterator[httpx.AsyncClient]:
     """Yield an httpx ``AsyncClient`` whose routes see the per-test ``db``.
 
-    Routes must read the database via ``Depends(get_db)``; direct
-    ``request.app.state.db`` access bypasses this override and would land on
-    whatever DB the real lifespan opened from ``POSTHOLE_DATABASE_URL``.
+    Routes read the database via ``Depends(get_db)`` — overridden here.
+    Global exception handlers (which can't take ``Depends``) read from
+    ``request.app.state.db`` — also overridden here so test DB visibility
+    is consistent across both paths.
     """
     app.dependency_overrides[get_db] = lambda: db
+    prior_state_db = getattr(app.state, "db", None)
+    app.state.db = db
 
     try:
         transport = httpx.ASGITransport(app=app)
@@ -37,9 +40,13 @@ async def client(db: Database) -> AsyncIterator[httpx.AsyncClient]:
             yield c
     finally:
         app.dependency_overrides.pop(get_db, None)
+        if prior_state_db is None:
+            del app.state.db
+        else:
+            app.state.db = prior_state_db
 
 
 @pytest.fixture
 def ig_access_token(db: Database) -> str:
     """Short-lived IG token bound to the seeded test_studio account (178414000000001)."""
-    return db.oauth.issue_token(account_id="178414000000001", kind="short").token
+    return oauth.issue_token(db, account_id="178414000000001", kind="short").token

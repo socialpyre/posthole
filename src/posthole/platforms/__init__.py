@@ -2,7 +2,7 @@
 
 Public surface (re-exported here):
 
-- :class:`PlatformModule` — the structural contract every platform satisfies
+- :class:`Platform` — the structural contract every platform satisfies
   (defined in :mod:`posthole.platforms.types`).
 - :data:`PLATFORMS` — the registered platform modules
   (defined in :mod:`posthole.platforms.registry`).
@@ -12,6 +12,6 @@ Public surface (re-exported here):
 
 from posthole.platforms.helpers import query_param
 from posthole.platforms.registry import PLATFORMS
-from posthole.platforms.types import PlatformModule
+from posthole.platforms.types import Platform
 
-__all__ = ["PLATFORMS", "PlatformModule", "query_param"]
+__all__ = ["PLATFORMS", "Platform", "query_param"]

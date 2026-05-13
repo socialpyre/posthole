@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from posthole.db import Database
+from posthole.db import Database, posts
 from posthole.db.migrations import load as load_migrations
 
 
@@ -32,8 +32,8 @@ def test_migrations_idempotent_across_reopen(tmp_path: Path) -> None:
 
 def test_post_round_trip(db: Database) -> None:
     """``create`` returns a Post; ``get`` returns the same fields."""
-    created = db.posts.create(platform="instagram", account_id="acc_1", caption="hello")
-    fetched = db.posts.get(created.id)
+    created = posts.create(db, platform="instagram", account_id="acc_1", caption="hello")
+    fetched = posts.get(db, created.id)
 
     assert fetched is not None
     assert fetched.id == created.id
@@ -46,9 +46,9 @@ def test_post_round_trip(db: Database) -> None:
 
 
 def test_post_mark_published_sets_status_and_timestamp(db: Database) -> None:
-    created = db.posts.create(platform="instagram", account_id="acc_1", caption="hi")
+    created = posts.create(db, platform="instagram", account_id="acc_1", caption="hi")
 
-    published = db.posts.mark_published(created.id)
+    published = posts.mark_published(db, created.id)
 
     assert published is not None
     assert published.status == "published"
@@ -56,9 +56,9 @@ def test_post_mark_published_sets_status_and_timestamp(db: Database) -> None:
 
 
 def test_post_mark_failed_records_reason(db: Database) -> None:
-    created = db.posts.create(platform="instagram", account_id="acc_1", caption="hi")
+    created = posts.create(db, platform="instagram", account_id="acc_1", caption="hi")
 
-    failed = db.posts.mark_failed(created.id, "rate-limited")
+    failed = posts.mark_failed(db, created.id, "rate-limited")
 
     assert failed is not None
     assert failed.status == "failed"
@@ -67,7 +67,7 @@ def test_post_mark_failed_records_reason(db: Database) -> None:
 
 def test_post_mark_published_returns_none_when_missing(db: Database) -> None:
     """UPDATE-then-SELECT path returns None when no row matches — non-obvious from the SQL alone."""
-    assert db.posts.mark_published("does-not-exist") is None
+    assert posts.mark_published(db, "does-not-exist") is None
 
 
 def test_downgrade_guard_refuses_too_new_schema(tmp_path: Path) -> None:

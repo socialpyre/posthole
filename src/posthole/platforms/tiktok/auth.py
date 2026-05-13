@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from posthole.db import oauth
 from posthole.platforms.tiktok._bearer import strip_bearer
 from posthole.platforms.tiktok.exceptions import AccessTokenInvalidError, MissingBearerHeaderError
 
@@ -23,7 +24,7 @@ def require_bearer(db: Database, authorization: str) -> OAuthToken:
     bearer = strip_bearer(authorization)
     if not bearer:
         raise MissingBearerHeaderError
-    tok = db.oauth.get_token(bearer)
+    tok = oauth.get_token(db, bearer)
     if tok is None:
         raise AccessTokenInvalidError
     return tok

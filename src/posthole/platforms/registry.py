@@ -11,6 +11,6 @@ from typing import TYPE_CHECKING
 from posthole.platforms import instagram, tiktok
 
 if TYPE_CHECKING:
-    from posthole.platforms.types import PlatformModule
+    from posthole.platforms.types import Platform
 
-PLATFORMS: tuple[PlatformModule, ...] = (instagram, tiktok)
+PLATFORMS: tuple[Platform, ...] = (instagram, tiktok)

@@ -1,4 +1,4 @@
-"""SQL for the ``accounts`` table — read by :class:`posthole.db.accounts.AccountStore`."""
+"""SQL for the ``accounts`` table — read by :mod:`posthole.db.accounts`."""
 
 from __future__ import annotations
 

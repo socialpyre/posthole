@@ -6,22 +6,20 @@ re-exports.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable
+    from collections.abc import Awaitable, Callable
 
     import httpx
-    from fastapi import APIRouter, FastAPI
-    from fastapi_hotwire import HotwireTemplates
+    from fastapi import APIRouter
 
 
-class PlatformModule(Protocol):
+class Platform(Protocol):
     """Structural type each platform package must expose at module scope.
 
-    ``build_router``, ``seed_flow``, and ``install_exception_handlers`` are
-    declared as :func:`staticmethod` so ty matches them against module-level
-    ``def`` functions (which take no ``self``).
+    Describes what a platform IS (domain), not what ``main.py`` happens to
+    call (wiring). Four attributes + a name:
 
     Router-mounting contract (see :mod:`posthole.main`):
 
@@ -34,19 +32,23 @@ class PlatformModule(Protocol):
 
     Exception-handling contract:
 
-    - ``install_exception_handlers(app)`` registers one or more FastAPI
-      exception handlers that convert this platform's exception base
-      (e.g. ``MetaAPIError``) into its wire envelope. ``main.py`` iterates
-      ``PLATFORMS`` and calls this once per platform at app construction.
+    - ``error_type`` is the base class for this platform's API errors;
+      handlers ``raise`` it (or subclasses) and ``error_handler`` converts
+      to the wire envelope. ``main.py`` registers ``error_handler`` against
+      ``error_type`` via ``app.add_exception_handler`` once per platform.
+
+    Seed contract:
+
+    - ``seed_flow(client)`` drives this platform's seed-data flow over HTTP
+      loopback. Called from :mod:`posthole.seed` once per platform.
     """
 
     name: str
-
-    @staticmethod
-    def build_router(templates: HotwireTemplates) -> APIRouter: ...
-
-    @staticmethod
-    def seed_flow(client: httpx.AsyncClient) -> Awaitable[int]: ...
-
-    @staticmethod
-    def install_exception_handlers(app: FastAPI) -> None: ...
+    router: APIRouter
+    error_type: type[Exception]
+    # FastAPI's add_exception_handler is typed Callable[..., Any]; we
+    # match that here rather than the stricter (Request, Exception) ->
+    # Awaitable[Response] form so platforms can return any Response
+    # subclass (JSONResponse, HTMLResponse, ...) without variance hassles.
+    error_handler: Callable[..., Any]
+    seed_flow: Callable[[httpx.AsyncClient], Awaitable[int]]

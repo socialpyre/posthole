@@ -15,7 +15,7 @@ from posthole.db import Database
 from posthole.logging import configure_logging, install_correlation_middleware
 from posthole.platforms import PLATFORMS
 from posthole.web import pages, system
-from posthole.web.templates import TEMPLATES_DIR, build_templates
+from posthole.web.templates import TEMPLATES_DIR
 
 # Real API clients send versioned URLs — Meta's ``/v22.0/...``, TikTok's
 # ``/v2/...``. The version is purely cosmetic for our purposes; strip it so
@@ -23,7 +23,6 @@ from posthole.web.templates import TEMPLATES_DIR, build_templates
 API_VERSION_RE = re.compile(r"^/v\d+(\.\d+)?(/|$)")
 
 PKG = Path(__file__).parent
-templates = build_templates()
 
 
 @asynccontextmanager
@@ -106,12 +105,14 @@ def create_app() -> FastAPI:
     #    ``GET /{id}``) will collide silently — the first registered wins.
     #    If a future platform needs that shape, namespace it (mount under
     #    ``/<platform>-containers/{id}`` etc.) rather than reordering.
-    app.include_router(pages.build_router(templates))
+    app.include_router(pages.router)
     app.include_router(system.router)
 
+    # One loop wires up everything platform-shaped: route surface + error
+    # rendering. Adding a third platform = one line in PLATFORMS.
     for plat in PLATFORMS:
-        plat.install_exception_handlers(app)
-        app.include_router(plat.build_router(templates))
+        app.include_router(plat.router)
+        app.add_exception_handler(plat.error_type, plat.error_handler)
 
     return app
 
