@@ -15,6 +15,7 @@ from posthole.db import Database
 from posthole.logging import configure_logging, install_correlation_middleware
 from posthole.platforms import PLATFORMS
 from posthole.web import pages, system
+from posthole.web.middleware import install_template_context_middleware
 from posthole.web.templates import TEMPLATES_DIR
 
 # Real API clients send versioned URLs — Meta's ``/v22.0/...``, TikTok's
@@ -79,6 +80,13 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json" if settings.docs_enabled else None,
     )
 
+    # Middleware registration order matters — Starlette wraps in reverse,
+    # so the LAST `add_middleware` call is the OUTERMOST layer at runtime.
+    # Register from "innermost" to "outermost":
+    #   1. install_template_context_middleware — stamps request.state for templates
+    #   2. install_correlation_middleware — sets correlation_id ContextVar
+    #   3. strip_api_version — rewrites /v22.0/... before any other code sees the path
+    install_template_context_middleware(app)
     install_correlation_middleware(app)
 
     @app.middleware("http")
