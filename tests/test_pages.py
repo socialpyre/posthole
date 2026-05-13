@@ -27,3 +27,16 @@ async def test_health_returns_ok(client: httpx.AsyncClient) -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+async def test_post_detail_stub_renders_inbox(client: httpx.AsyncClient) -> None:
+    """``/posts/{id}`` currently re-renders the inbox shell (stub for the split-pane feature).
+
+    Real lookup + 404 handling lands with the inbox feature; until then,
+    the route must at least exist and return 200. This regression guards
+    against a refactor accidentally dropping the route.
+    """
+    response = await client.get("/posts/anything")
+
+    assert response.status_code == 200
+    assert "No posts yet" in response.text  # inbox empty-state marker
