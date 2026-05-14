@@ -2,26 +2,91 @@
 
 <header class="flex h-12 shrink-0 items-center gap-3 border-b border-(--border) bg-(--panel) px-3">
   <button
-    type="button"
-    data-controller="sidebar"
-    data-action="click->sidebar#open"
     aria-label="Open menu"
     class="flex h-8 w-8 items-center justify-center rounded text-(--sub) hover:bg-(--hover) lg:hidden"
+    data-action="click->sidebar#open"
+    data-controller="sidebar"
+    type="button"
   >
     {{ icon("menu", 18) }}
   </button>
 
-  <a href="/" class="flex items-center gap-2 font-mono text-sm font-semibold tracking-tight">
+  <a
+    aria-label="posthole home"
+    class="flex items-center gap-2 font-mono text-sm font-semibold tracking-tight"
+    href="/"
+  >
     <span>posthole</span>
   </a>
 
+  {# Search input is scoped to posts pages; ``current_for`` matches /posts and
+     /posts/{id}. The else branch keeps the theme toggle right-aligned. #}
+  {% if request.url.path is current_for('/posts') %}
+    <div class="ml-2 hidden flex-1 sm:block">
+      {# data-controller lives on the <label> so the clear button (a sibling
+         of the input) is inside the controller's scope. The input is the
+         named target. #}
+      <label
+        class="relative block max-w-[520px]"
+        data-controller="search"
+        data-search-delay-value="200"
+      >
+        <span class="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-(--muted)">
+          {{ icon("search", 14) }}
+        </span>
+        {# data-turbo-permanent + a stable id keep this exact DOM node
+           across the Turbo Visits the search controller fires per
+           keystroke. Without it, the input is replaced by the
+           server-rendered version on every visit and focus dies. #}
+        <input
+          id="topbar-search"
+          type="search"
+          name="q"
+          value="{{ request.query_params.q or '' }}"
+          placeholder="Search captions and accounts"
+          aria-label="Search posts"
+          aria-keyshortcuts="Meta+K Control+K"
+          data-search-target="input"
+          data-action="input->search#query"
+          data-turbo-permanent
+          class="block w-full rounded-md border border-(--border) bg-(--bg)
+                 py-1.5 pr-16 pl-8 font-sans text-[12px] text-(--fg)
+                 placeholder:text-(--muted) focus:border-(--accent)
+                 focus:outline-none"
+        />
+        {# Right slot: ⌘K always visible; clear button appears to its left
+           when the input has content. CSS in ui/styles.css hides the X
+           when the input is empty (via :placeholder-shown). #}
+        <button
+          type="button"
+          data-action="click->search#clear"
+          aria-label="Clear search"
+          class="search-clear absolute top-1/2 right-10 flex h-5 w-5
+                 -translate-y-1/2 items-center justify-center rounded
+                 text-(--muted) hover:bg-(--hover) hover:text-(--fg)"
+        >
+          {{ icon("x", 12) }}
+        </button>
+        <kbd
+          class="pointer-events-none absolute top-1/2 right-2 flex h-5
+                 -translate-y-1/2 items-center rounded
+                 border border-(--border-mid) bg-(--panel) px-1.5
+                 font-mono text-[10px] text-(--muted)"
+          >⌘K</kbd
+        >
+      </label>
+    </div>
+  {% else %}
+    <span class="flex-1"></span>
+  {% endif %}
+
   <div class="ml-auto flex items-center gap-1.5">
     <button
-      type="button"
-      data-controller="theme"
-      data-action="click->theme#cycle"
       aria-label="Cycle theme: light, dark, system"
       class="flex h-7 w-7 items-center justify-center rounded text-(--sub) hover:bg-(--hover)"
+      data-action="click->theme#cycle"
+      data-controller="theme"
+      type="button"
     >
       <span data-theme-icon="light">{{ icon("sun", 16) }}</span>
       <span data-theme-icon="dark">{{ icon("moon", 16) }}</span>

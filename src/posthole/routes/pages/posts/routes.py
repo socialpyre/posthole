@@ -1,7 +1,7 @@
-"""Inbox routes: ``/`` and ``/posts/{post_id}`` render the split-pane shell."""
+"""Inbox/Post routes to render the split-pane shell."""
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 from posthole.core.templates import templates
 from posthole.db import DbDep, posts
@@ -11,19 +11,27 @@ from posthole.routes.pages.posts.exceptions import PostNotFoundError
 router = APIRouter()
 
 
-@router.get("/", response_class=HTMLResponse)
-async def inbox_view(request: Request, db: DbDep) -> HTMLResponse:
+@router.get("/", response_class=RedirectResponse)
+async def inbox_view() -> RedirectResponse:
     """Render the inbox view at ``/``."""
+    return RedirectResponse("/posts")
+
+
+@router.get("/posts", response_class=HTMLResponse)
+async def posts_view(request: Request, db: DbDep, q: str | None = None) -> HTMLResponse:
+    """Render the inbox at ``/posts``; ``?q=`` filters the list."""
     return templates.TemplateResponse(
         request,
-        "pages/inbox/index.html.j2",
-        inbox_context(db),
+        "pages/posts/index.html.j2",
+        inbox_context(db, q=q),
     )
 
 
 @router.get("/posts/{post_id}", response_class=HTMLResponse)
-async def post_detail_view(post_id: str, request: Request, db: DbDep) -> HTMLResponse:
-    """Render a single post in the detail pane of the inbox shell."""
+async def post_detail_view(
+    post_id: str, request: Request, db: DbDep, q: str | None = None
+) -> HTMLResponse:
+    """Render a single post in the detail pane; ``?q=`` keeps the list filtered."""
     selected = posts.get(db, post_id)
 
     if selected is None:
@@ -31,6 +39,6 @@ async def post_detail_view(post_id: str, request: Request, db: DbDep) -> HTMLRes
 
     return templates.TemplateResponse(
         request,
-        "pages/inbox/index.html.j2",
-        inbox_context(db, selected=selected),
+        "pages/posts/index.html.j2",
+        inbox_context(db, selected=selected, q=q),
     )

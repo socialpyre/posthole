@@ -1,0 +1,96 @@
+{% from "macros/icon.html.j2" import icon %}
+
+{% set username = usernames.get(selected.account_id) %}
+
+<div class="flex h-full min-h-0 flex-col bg-(--bg)">
+  <header
+    class="sticky top-0 z-10 flex items-center gap-3
+           border-b border-(--border) bg-(--panel) px-4 py-2.5"
+  >
+    <a
+      href="/posts{% if q %}?q={{ q | urlencode }}{% endif %}"
+      data-turbo-frame="_top"
+      aria-label="Back to inbox"
+      class="flex h-8 w-8 items-center justify-center rounded text-(--sub)
+             hover:bg-(--hover) lg:hidden"
+      >{{ icon("chev-left", 16) }}</a
+    >
+
+    <div class="min-w-0 flex-1">
+      <h2 id="post-detail-heading" class="flex items-center gap-2">
+        <span class="truncate font-sans text-[13px] font-semibold">
+          @{{ username or selected.account_id }}
+        </span>
+
+        <span data-status="{{ selected.status }}" class="font-mono text-[10px] uppercase">
+          {{ selected.status }}
+        </span>
+      </h2>
+
+      <p class="truncate font-mono text-[11px] text-(--muted)">{{ selected.id }}</p>
+    </div>
+  </header>
+
+  <div class="bg-grid flex-1 min-h-0 overflow-y-auto p-6">
+    <dl class="space-y-3 font-mono text-[12px]">
+      <div>
+        <dt class="uppercase tracking-wider text-(--muted)">Account</dt>
+        <dd class="text-(--fg)">@{{ username or selected.account_id }}</dd>
+      </div>
+      <div>
+        <dt class="uppercase tracking-wider text-(--muted)">Platform</dt>
+        <dd class="text-(--fg)">{{ selected.platform }}</dd>
+      </div>
+      {% if selected.caption %}
+        <div>
+          <dt class="uppercase tracking-wider text-(--muted)">Caption</dt>
+          <dd class="whitespace-pre-wrap font-sans text-(--fg)">{{ selected.caption }}</dd>
+        </div>
+      {% endif %}
+      {% if selected.media_url %}
+        <div>
+          <dt class="uppercase tracking-wider text-(--muted)">
+            {{ selected.media_type|lower if selected.media_type else 'media' }} url
+          </dt>
+          <dd>
+            <a
+              href="{{ selected.media_url }}"
+              target="_blank"
+              rel="noopener"
+              class="break-all text-(--accent-text) underline"
+              >{{ selected.media_url }}</a
+            >
+          </dd>
+        </div>
+      {% endif %}
+      {% if selected.external_ref %}
+        <div>
+          <dt class="uppercase tracking-wider text-(--muted)">External ref</dt>
+          <dd class="break-all text-(--fg)">{{ selected.external_ref }}</dd>
+        </div>
+      {% endif %}
+      {% if selected.platform_post_id %}
+        <div>
+          <dt class="uppercase tracking-wider text-(--muted)">Platform post id</dt>
+          <dd class="break-all text-(--fg)">{{ selected.platform_post_id }}</dd>
+        </div>
+      {% endif %}
+      <div>
+        <dt class="uppercase tracking-wider text-(--muted)">Captured</dt>
+        <dd class="text-(--fg)">{{ selected.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+      </div>
+      {% if selected.published_at %}
+        <div>
+          <dt class="uppercase tracking-wider text-(--muted)">Published</dt>
+          <dd class="text-(--fg)">{{ selected.published_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+        </div>
+      {% endif %}
+      {% if selected.failure_reason %}
+        <div>
+          <dt class="uppercase tracking-wider text-(--muted)">Failure reason</dt>
+          <dd class="text-(--fg)">{{ selected.failure_reason }}</dd>
+        </div>
+      {% endif %}
+    </dl>
+  </div>
+</div>

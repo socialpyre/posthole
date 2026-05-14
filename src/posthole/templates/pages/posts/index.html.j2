@@ -1,0 +1,67 @@
+{% extends "layouts/app.html.j2" %}
+{% from "macros/empty_state.html.j2" import empty_state %}
+
+{% block page_title %}
+  {% if selected %}
+    post · posthole
+  {% elif not_found %}
+    not found · posthole
+  {% else %}
+    inbox · posthole
+  {% endif %}
+{% endblock %}
+
+{% block main %}
+  <div
+    class="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[360px_1fr]"
+    data-controller="list-selection"
+    data-inbox-pane="{{ 'detail' if selected or not_found else 'list' }}"
+  >
+    <section
+      data-pane-list
+      class="flex min-h-0 min-w-0 flex-col border-b border-(--border) bg-(--panel)
+             lg:border-r lg:border-b-0"
+    >
+      {% include "pages/posts/_list_header.html.j2" %}
+
+      <div class="flex-1 overflow-y-auto">
+        {% if posts %}
+          <ul class="divide-y divide-(--border)">
+            {% for p in posts %}
+              {% include "pages/posts/_row.html.j2" %}
+            {% endfor %}
+          </ul>
+        {% else %}
+          {{ empty_state("No posts yet", "Publish one to see it here.") }}
+        {% endif %}
+      </div>
+    </section>
+
+    <section
+      data-pane-detail
+      role="region"
+      aria-label="Post detail"
+      tabindex="-1"
+      class="flex min-h-0 min-w-0 flex-col focus:outline-none"
+    >
+      <turbo-frame
+        id="post-detail"
+        data-turbo-action="advance"
+        class="flex h-full min-h-0 flex-col"
+      >
+        {# Frame swaps replace the frame's children but don't touch <head>.
+           Carry the page title inside the frame so a turbo:frame-render
+           listener (ui/main.ts) can copy it onto document.title. #}
+        <span hidden data-frame-title>{{ self.page_title()|trim }}</span>
+
+        {% if not_found %}
+          {% include "pages/posts/_not_found.html.j2" %}
+        {% elif selected %}
+          {% include "pages/posts/_detail.html.j2" %}
+        {% else %}
+          {{ empty_state("Select a post", "Captures show up on the left.") }}
+        {% endif %}
+      </turbo-frame>
+    </section>
+  </div>
+{% endblock %}

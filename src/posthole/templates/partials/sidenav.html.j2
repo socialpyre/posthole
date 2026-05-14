@@ -1,7 +1,8 @@
 {% from "macros/icon.html.j2" import icon %}
+
 {%
   set items = [
-    ("/", "Inbox", "inbox"),
+    ("/posts", "Inbox", "inbox"),
     ("/accounts", "Accounts", "users"),
     ("/scenarios", "Scenarios", "beaker"),
     ("/settings", "Settings", "cog"),
@@ -34,9 +35,11 @@
     >
       Workspace
     </p>
+
     <ul class="space-y-0.5">
       {% for path, label, ic in items %}
-        {% set is_current = request.url.path == path %}
+        {% set is_current = request.url.path is current_for(path) %}
+
         <li>
           <a
             href="{{ path }}"
@@ -49,7 +52,7 @@
               before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5
               before:rounded-r before:bg-(--accent)
             {% else %}
-              text-(--fg) hover:bg-(--hover)
+              hover:bg-(--hover)
             {% endif %}"
           >
             <span

@@ -31,7 +31,7 @@ turn any user-supplied variable into an XSS sink.
 
 **Block contract.** `layouts/app.html.j2` exposes:
 
-- `{% block title %}` — `<title>` content. Defaults to `posthole`.
+- `{% block page_title %}` — `<title>` content. Defaults to `posthole`.
 - `{% block main %}` — primary content slot, rendered inside the layout's
   `<main class="flex-1 min-w-0">`.
 

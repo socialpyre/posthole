@@ -2,6 +2,8 @@ import "@hotwired/turbo";
 import { Application } from "@hotwired/stimulus";
 
 import HelloController from "./controllers/hello_controller.ts";
+import ListSelectionController from "./controllers/list_selection_controller.ts";
+import SearchController from "./controllers/search_controller.ts";
 import SidebarController from "./controllers/sidebar_controller.ts";
 import ThemeController from "./controllers/theme_controller.ts";
 
@@ -14,7 +16,19 @@ declare global {
 const app = Application.start();
 
 app.register("hello", HelloController);
+app.register("list-selection", ListSelectionController);
+app.register("search", SearchController);
 app.register("sidebar", SidebarController);
 app.register("theme", ThemeController);
 
 window.Stimulus = app;
+
+// Turbo Frame swaps don't touch <head>, so document.title stays stale on
+// frame-scoped navigation. Each frame response carries its title in a
+// `<span data-frame-title>` child; copy that onto document.title here.
+// Drive visits (back/forward/refresh) re-render <head> and bypass this path.
+document.addEventListener("turbo:frame-render", (event) => {
+  const frame = event.target as HTMLElement;
+  const title = frame.querySelector<HTMLElement>("[data-frame-title]")?.textContent?.trim();
+  if (title) document.title = title;
+});

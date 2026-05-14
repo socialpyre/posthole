@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>{% block title %}posthole{% endblock %}</title>
+    <title>{% block page_title %}posthole{% endblock %}</title>
 
     <script>
       (function () {
@@ -42,6 +42,18 @@
   </head>
 
   <body class="h-screen overflow-hidden bg-(--bg) text-(--fg)">
+    {# WCAG 2.4.1 (Bypass Blocks): keyboard users tab past the sidenav and
+       topbar by activating this link. ``sr-only`` keeps it visually hidden
+       until focused. ``<main tabindex="-1">`` makes it a programmatic focus
+       target. #}
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50
+             focus:rounded focus:bg-(--accent) focus:px-3 focus:py-1.5
+             focus:font-semibold focus:text-white focus:shadow"
+      >Skip to main content</a
+    >
+
     <button
       type="button"
       data-controller="sidebar"
@@ -56,7 +68,13 @@
 
       <div class="flex min-w-0 flex-1 flex-col">
         {% include "partials/topbar.html.j2" %}
-        <main class="flex-1 min-w-0 min-h-0 overflow-hidden">{% block main %}{% endblock %}</main>
+        <main
+          id="main-content"
+          tabindex="-1"
+          class="flex-1 min-w-0 min-h-0 overflow-hidden focus:outline-none"
+        >
+          {% block main %}{% endblock %}
+        </main>
       </div>
     </div>
 

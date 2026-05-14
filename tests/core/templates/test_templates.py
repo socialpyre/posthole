@@ -12,4 +12,4 @@ def test_app_layout_resolves() -> None:
 def test_inbox_index_resolves() -> None:
     """The inbox page template loads at its expected path."""
     templates = build_templates()
-    assert templates.get_template("pages/inbox/index.html.j2")
+    assert templates.get_template("pages/posts/index.html.j2")

@@ -1,0 +1,42 @@
+{% set username = usernames.get(p.account_id) %}
+{% set caption = (p.caption or '')|replace('\n', ' ')|trim %}
+{% set q_suffix = '?q=' ~ (q | urlencode) if q else '' %}
+
+<li>
+  <a
+    class="flex gap-3 border-l-2 border-transparent px-4 py-3 transition hover:bg-(--hover)"
+    data-action="click->list-selection#select"
+    data-list-selection-target="row"
+    data-turbo-frame="post-detail"
+    href="/posts/{{ p.id }}{{ q_suffix }}"
+    {% if selected and selected.id == p.id %}aria-current="page"{% endif %}
+  >
+    <div
+      class="flex h-11 w-11 shrink-0 items-center justify-center
+             rounded-md border border-(--border) bg-(--code)
+             font-mono text-[10px] uppercase text-(--muted)"
+    >
+      {{ 'IG' if p.platform == 'instagram' else 'TT' }}
+    </div>
+
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2 text-[12px]">
+        <span class="truncate font-semibold text-(--fg)">@{{ username or p.account_id }}</span>
+        <span class="ml-auto font-mono text-[10px] text-(--muted)">
+          {{ p.created_at.strftime('%H:%M:%S') }}
+        </span>
+      </div>
+
+      <p class="mt-0.5 line-clamp-2 text-[12px] leading-snug text-(--sub)">
+        {{ (caption | truncate(90, true, '…')) if caption else '(no caption)' }}
+      </p>
+
+      <div class="mt-1.5 flex items-center gap-2">
+        <span data-status="{{ p.status }}" class="font-mono text-[10px] uppercase">
+          {{ p.status }}
+        </span>
+        <span class="font-mono text-[10px] text-(--muted)">{{ p.platform }}</span>
+      </div>
+    </div>
+  </a>
+</li>

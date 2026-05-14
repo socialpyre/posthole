@@ -1,0 +1,23 @@
+{% from "macros/icon.html.j2" import icon %}
+{% from "macros/empty_state.html.j2" import empty_state %}
+
+<div class="flex h-full min-h-0 flex-col bg-(--bg)">
+  <header
+    class="sticky top-0 z-10 flex items-center gap-3
+           border-b border-(--border) bg-(--panel) px-4 py-2.5"
+  >
+    <a
+      href="/posts{% if q %}?q={{ q | urlencode }}{% endif %}"
+      data-turbo-frame="_top"
+      aria-label="Back to inbox"
+      class="flex h-8 w-8 items-center justify-center rounded text-(--sub)
+             hover:bg-(--hover) lg:hidden"
+      >{{ icon("chev-left", 16) }}</a
+    >
+    <span class="font-sans text-[13px] font-semibold text-(--sub)">Post not found</span>
+  </header>
+
+  <div role="alert" class="flex-1 min-h-0 overflow-y-auto">
+    {{ empty_state("Post not found", "This post id doesn't match anything in the database.") }}
+  </div>
+</div>

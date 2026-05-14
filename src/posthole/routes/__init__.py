@@ -16,18 +16,12 @@ from posthole.routes.platforms import PLATFORMS
 
 router = APIRouter()
 
-# UI routes first — literal paths (``/``, ``/accounts``, ``/scenarios``,
-# ``/settings``, ``/_health``) win FastAPI's first-match resolution before
-# falling through to the platform routers' single-segment wildcards.
 router.include_router(_inbox_router)
 router.include_router(_accounts_router)
 router.include_router(_scenarios_router)
 router.include_router(_settings_router)
 router.include_router(_health_router)
 
-# Platform routers second. Each platform MAY mount a single-segment
-# wildcard at root (IG's ``GET /{container_id}``), which is why they
-# must come after the literal-path UI routes.
 for _plat in PLATFORMS:
     router.include_router(_plat.router)
 
