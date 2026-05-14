@@ -6,6 +6,7 @@ import pytest
 
 from posthole.db import Database, accounts, oauth, posts
 from posthole.db.migrations import load as load_migrations
+from posthole.db.posts import Media
 
 
 def test_migrations_idempotent_across_reopen(tmp_path: Path) -> None:
@@ -88,6 +89,56 @@ def test_post_create_round_trips_optional_fields(db: Database) -> None:
     assert fetched.media_type == "IMAGE"
 
 
+def test_post_create_with_media_list_round_trips(db: Database) -> None:
+    """Carousel posts: ``media=[...]`` survives JSON serialization in media_items."""
+    created = posts.create(
+        db,
+        platform="instagram",
+        account_id="acc_1",
+        media=[
+            Media(ordinal=0, kind="IMAGE", url="https://example.com/1.jpg"),
+            Media(ordinal=1, kind="IMAGE", url="https://example.com/2.jpg"),
+            Media(ordinal=2, kind="VIDEO", url="https://example.com/3.mp4"),
+        ],
+    )
+
+    fetched = posts.get(db, created.id)
+    assert fetched is not None
+    assert len(fetched.media) == 3
+    assert [m.ordinal for m in fetched.media] == [0, 1, 2]
+    assert [m.kind for m in fetched.media] == ["IMAGE", "IMAGE", "VIDEO"]
+    assert fetched.media[2].url == "https://example.com/3.mp4"
+
+
+def test_post_media_synthesized_from_legacy_columns(db: Database) -> None:
+    """A post created with only media_url loads a 1-item ``media`` list."""
+    created = posts.create(
+        db,
+        platform="instagram",
+        account_id="acc_1",
+        media_url="https://example.com/single.jpg",
+        media_type="IMAGE",
+    )
+
+    fetched = posts.get(db, created.id)
+    assert fetched is not None
+    assert fetched.media == [Media(ordinal=0, kind="IMAGE", url="https://example.com/single.jpg")]
+
+
+def test_post_demo_carousel_seeded_by_migration_0003(db: Database) -> None:
+    """Migration 0003 seeds a 3-item carousel for the inbox demo."""
+    fetched = posts.get(db, "demo-carousel-0001")
+
+    assert fetched is not None
+    assert fetched.platform == "instagram"
+    assert len(fetched.media) == 3
+    assert [m.url for m in fetched.media] == [
+        "https://picsum.photos/seed/posthole-c1/1080/1080",
+        "https://picsum.photos/seed/posthole-c2/1080/1080",
+        "https://picsum.photos/seed/posthole-c3/1080/1080",
+    ]
+
+
 def test_post_get_by_external_ref(db: Database) -> None:
     """Lookup-by-external-ref is the path both IG and TT publish flows use."""
     created = posts.create(
@@ -125,7 +176,11 @@ def test_post_list_recent_orders_newest_first_and_respects_limit(db: Database) -
     b = posts.create(db, platform="instagram", account_id="acc_1", caption="b")
     c = posts.create(db, platform="instagram", account_id="acc_1", caption="c")
 
-    all_posts = posts.list_recent(db, limit=10)
+    # Filter out the demo carousel seeded by migration 0003 (older
+    # created_at than anything we create in-test) so the assertion is
+    # robust to seed additions.
+    test_ids = {a.id, b.id, c.id}
+    all_posts = [p for p in posts.list_recent(db, limit=10) if p.id in test_ids]
     assert [p.id for p in all_posts] == [c.id, b.id, a.id]
 
     capped = posts.list_recent(db, limit=2)

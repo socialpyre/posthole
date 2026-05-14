@@ -1,9 +1,15 @@
 """Template-context builder for the inbox shell."""
 
+from posthole.core.tabs import TabSpec
 from posthole.db import Database, accounts, posts
 from posthole.db.posts import Post
 
 INBOX_LIST_LIMIT = 50
+
+VIEWS = TabSpec(
+    options=(("preview", "Preview"), ("metadata", "Metadata")),
+    default="preview",
+)
 
 
 def inbox_context(
@@ -12,18 +18,9 @@ def inbox_context(
     selected: Post | None = None,
     not_found: bool = False,
     q: str | None = None,
+    view: str | None = None,
 ) -> dict[str, object]:
-    """Build the template context for the inbox shell.
-
-    Templates receive ``Post`` dataclasses directly and resolve usernames
-    via the ``usernames`` map, so the row partial doesn't trigger a
-    per-row account query. ``accounts.list_all`` is one round-trip and
-    the table is small (seeded handful); revisit if it grows.
-
-    When ``q`` is non-empty, rows are filtered case-insensitively against
-    caption, account_id, and resolved username. In-memory because our
-    scale is small; promote to SQL LIKE / FTS5 if list size grows.
-    """
+    """Build the template context for the inbox shell."""
     rows = posts.list_recent(db, limit=INBOX_LIST_LIMIT)
     usernames = {a.id: a.username for a in accounts.list_all(db)}
 
@@ -44,4 +41,6 @@ def inbox_context(
         "usernames": usernames,
         "not_found": not_found,
         "q": q or "",
+        "view": VIEWS.normalize(view),
+        "views_spec": VIEWS,
     }

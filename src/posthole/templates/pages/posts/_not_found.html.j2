@@ -1,5 +1,6 @@
 {% from "macros/icon.html.j2" import icon %}
 {% from "macros/empty_state.html.j2" import empty_state %}
+{% from "macros/post_link.html.j2" import posts_link %}
 
 <div class="flex h-full min-h-0 flex-col bg-(--bg)">
   <header
@@ -7,7 +8,7 @@
            border-b border-(--border) bg-(--panel) px-4 py-2.5"
   >
     <a
-      href="/posts{% if q %}?q={{ q | urlencode }}{% endif %}"
+      href="{{ posts_link(q=q) }}"
       data-turbo-frame="_top"
       aria-label="Back to inbox"
       class="flex h-8 w-8 items-center justify-center rounded text-(--sub)

@@ -18,7 +18,12 @@ async def handle_post_not_found(request: Request, exc: Exception) -> HTMLRespons
     if not isinstance(exc, PostNotFoundError):  # pragma: no cover — defensive
         raise exc
 
-    ctx = inbox_context(request.app.state.db, not_found=True, q=request.query_params.get("q"))
+    ctx = inbox_context(
+        request.app.state.db,
+        not_found=True,
+        q=request.query_params.get("q"),
+        view=request.query_params.get("view"),
+    )
 
     return templates.TemplateResponse(
         request,

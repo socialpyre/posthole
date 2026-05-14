@@ -1,4 +1,7 @@
+@layer theme, base, devices, components, utilities;
+
 @import "tailwindcss";
+@import "devices.css/dist/devices.min.css" layer(devices);
 
 @source "../templates";
 
@@ -137,11 +140,40 @@ html[data-drawer-open] [data-drawer-overlay] {
   background-position: -1px -1px;
 }
 
-/* Topbar search input. Hide the native ::-webkit-search-cancel-button —
-   it's a UA decoration with no a11y role, no cursor:pointer, and it
-   visually collides with our ⌘K hint. We render our own <button> next to
-   the (always-visible) ⌘K hint; the button is hidden when the input is
-   empty (:placeholder-shown matches an empty input with a placeholder). */
+.phone-preview {
+  container-type: inline-size;
+  padding: 1.25rem 1rem 2rem;
+}
+.phone-preview-scaler {
+  display: flex;
+  justify-content: center;
+}
+
+.phone-preview-scaler .device-screen {
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #ffffff;
+  color: #111827;
+}
+
+.carousel-disc {
+  font-size: 0;
+}
+
+@container (max-width: 460px) {
+  .phone-preview-scaler .device {
+    transform: scale(0.78);
+    transform-origin: top center;
+    margin-bottom: -190px;
+  }
+}
+@container (max-width: 380px) {
+  .phone-preview-scaler .device {
+    transform: scale(0.62);
+    margin-bottom: -320px;
+  }
+}
+
 #topbar-search::-webkit-search-cancel-button,
 #topbar-search::-webkit-search-decoration {
   -webkit-appearance: none;

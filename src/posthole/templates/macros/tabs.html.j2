@@ -1,0 +1,63 @@
+{# Reusable tab-routing macros.
+
+   The ``tabs`` wrapper uses ``display: contents`` (Tailwind's
+   ``class="contents"``) so it doesn't disrupt the parent's flex layout
+   — Stimulus still finds the element via the data-controller attr,
+   but the box doesn't generate its own layout slot. #}
+
+{# Active key isn't needed on the wrapper — server-rendered
+   aria-selected on the tabs + `hidden` on the panels is the source of
+   truth; the wrapper just exists to mount the controller. #}
+
+{% macro tabs(spec) %}
+  <div
+    data-controller="tabs"
+    data-tabs-param-value="{{ spec.param }}"
+    data-tabs-default-panel-value="{{ spec.default }}"
+    class="contents"
+  >
+    {{ caller() }}
+  </div>
+{% endmacro %}
+
+{% macro tablist(spec, active, label="Views") %}
+  <div
+    role="tablist"
+    aria-label="{{ label }}"
+    class="flex gap-1 border-b border-(--border) bg-(--panel) px-3"
+  >
+    {% for key, button_label in spec.options %}
+      {% set is_active = key == active %}
+      <button
+        type="button"
+        role="tab"
+        id="tab-{{ key }}"
+        aria-selected="{{ 'true' if is_active else 'false' }}"
+        aria-controls="panel-{{ key }}"
+        tabindex="{{ '0' if is_active else '-1' }}"
+        data-tabs-target="tab"
+        data-action="click->tabs#select keydown->tabs#keydown"
+        data-tabs-key="{{ key }}"
+        class="-mb-px border-b-2 border-transparent px-3 py-2 font-sans text-[12px]
+               text-(--sub) hover:text-(--fg)
+               aria-selected:border-(--accent) aria-selected:text-(--fg)"
+      >
+        {{ button_label }}
+      </button>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro tabpanel(key, active, classes="") %}
+  <div
+    role="tabpanel"
+    id="panel-{{ key }}"
+    aria-labelledby="tab-{{ key }}"
+    data-tabs-target="panel"
+    data-panel="{{ key }}"
+    {% if key != active %}hidden{% endif %}
+    class="{{ classes }}"
+  >
+    {{ caller() }}
+  </div>
+{% endmacro %}

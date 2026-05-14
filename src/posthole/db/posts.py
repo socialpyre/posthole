@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Literal
 
@@ -19,6 +20,15 @@ MediaType = Literal["IMAGE", "VIDEO"]
 PostStatus = Literal["pending", "published", "failed"]
 
 
+@dataclass(slots=True, frozen=True)
+class Media:
+    """One item in a post's media set (carousel slide or singleton)."""
+
+    ordinal: int
+    kind: MediaType
+    url: str
+
+
 @dataclass(slots=True)
 class Post:
     """One publish attempt against a platform — the central mock-server entity.
@@ -27,6 +37,11 @@ class Post:
     pending publish (IG's container_id, TikTok's publish_id).
     ``platform_post_id`` is the final platform-side identifier returned
     once the publish completes.
+
+    ``media`` is the ordered list of media items. For single-media posts
+    it's a 1-item list synthesized from ``media_url`` / ``media_type`` if
+    the row pre-dates carousel support; for carousel posts it's hydrated
+    from the ``media_items`` JSON column.
     """
 
     id: str
@@ -41,6 +56,7 @@ class Post:
     media_url: str | None
     media_type: MediaType | None
     platform_post_id: str | None
+    media: list[Media] = field(default_factory=list)
 
 
 def create(
@@ -52,8 +68,18 @@ def create(
     external_ref: str | None = None,
     media_url: str | None = None,
     media_type: MediaType | None = None,
+    media: list[Media] | None = None,
 ) -> Post:
     """Insert a new post in ``pending`` status; return the hydrated row."""
+    media_list = list(media) if media else []
+    media_items_json = (
+        json.dumps([{"ordinal": m.ordinal, "kind": m.kind, "url": m.url} for m in media_list])
+        if media_list
+        else None
+    )
+    if not media_list and media_url:
+        media_list = [Media(ordinal=0, kind=media_type or "IMAGE", url=media_url)]
+
     post = Post(
         id=str(uuid.uuid4()),
         platform=platform,
@@ -67,7 +93,9 @@ def create(
         media_url=media_url,
         media_type=media_type,
         platform_post_id=None,
+        media=media_list,
     )
+
     with db.cursor() as cur:
         cur.execute(
             sql.INSERT,
@@ -81,8 +109,10 @@ def create(
                 post.external_ref,
                 post.media_url,
                 post.media_type,
+                media_items_json,
             ),
         )
+
     return post
 
 
@@ -155,6 +185,10 @@ def mark_published_by_external_ref(
 
 def _from_row(row: sqlite3.Row) -> Post:
     """Hydrate a :class:`Post` from a ``posts`` table row."""
+    media = _parse_media_items(row["media_items"])
+    if not media and row["media_url"]:
+        media = [Media(ordinal=0, kind=row["media_type"] or "IMAGE", url=row["media_url"])]
+
     return Post(
         id=row["id"],
         platform=row["platform"],
@@ -168,6 +202,7 @@ def _from_row(row: sqlite3.Row) -> Post:
         media_url=row["media_url"],
         media_type=row["media_type"],
         platform_post_id=row["platform_post_id"],
+        media=media,
     )
 
 
@@ -179,3 +214,11 @@ def _iso(dt: datetime) -> str:
 def _parse_iso(s: str | None) -> datetime | None:
     """Parse an optional ISO 8601 string back into a datetime."""
     return datetime.fromisoformat(s) if s else None
+
+
+def _parse_media_items(raw: str | None) -> list[Media]:
+    """Decode the ``media_items`` JSON column into an ordered list of :class:`Media`."""
+    if not raw:
+        return []
+    items = json.loads(raw)
+    return [Media(ordinal=i["ordinal"], kind=i["kind"], url=i["url"]) for i in items]

@@ -1,0 +1,212 @@
+{% from "macros/icon.html.j2" import icon %}
+
+{% set username = usernames.get(selected.account_id) or selected.account_id %}
+{% set is_published = selected.status == "published" %}
+{% set media = selected.media %}
+{% set is_carousel = media|length > 1 %}
+{% set first = media[0] if media else none %}
+{%
+  set phone_presets = [
+    ("iphone-14-pro",      "iPhone 14 Pro"),
+    ("iphone-14",          "iPhone 14"),
+    ("iphone-8",           "iPhone 8"),
+    ("google-pixel-6-pro", "Pixel 6 Pro"),
+  ]
+%}
+
+<div class="phone-preview" data-controller="phone">
+  <div
+    role="group"
+    aria-label="Phone preset"
+    class="mb-4 flex flex-wrap items-center justify-center gap-1"
+  >
+    {% for slug, label in phone_presets %}
+      <button
+        type="button"
+        data-phone-target="chip"
+        data-action="click->phone#select"
+        data-preset="{{ slug }}"
+        {% if loop.first %}data-active{% endif %}
+        aria-pressed="{{ 'true' if loop.first else 'false' }}"
+        class="h-7 rounded-md border border-(--border-mid) bg-(--bg) px-2.5
+               font-sans text-[11px] text-(--sub) hover:bg-(--hover)
+               data-active:border-(--accent) data-active:bg-(--accent)
+               data-active:text-white"
+      >
+        {{ label }}
+      </button>
+    {% endfor %}
+  </div>
+
+  <div class="phone-preview-scaler">
+    <div data-phone-target="device" class="device device-iphone-14-pro">
+      <div class="device-frame">
+        {# .device-screen is a fixed 390x830 viewport from devices.css.
+           Don't add flex/h-full Tailwind utilities here — they fight the
+           library's internal sizing and pop the screen content out of
+           the device chrome. #}
+        <div class="device-screen bg-white text-gray-900">
+          <div class="h-14"></div>
+
+          <div class="relative aspect-square w-full bg-gray-100">
+            {% if is_carousel %}
+              <div
+                class="relative h-full w-full outline-none"
+                data-controller="carousel"
+                tabindex="0"
+                aria-roledescription="carousel"
+                aria-label="Carousel with {{ media|length }} items"
+              >
+                {% for m in media %}
+                  <div
+                    data-carousel-target="slide"
+                    {% if loop.first %}data-active{% endif %}
+                    class="absolute inset-0 transition-opacity duration-150
+                           data-active:opacity-100 not-data-active:pointer-events-none not-data-active:opacity-0"
+                    aria-hidden="{{ 'false' if loop.first else 'true' }}"
+                  >
+                    {% if m.kind == "VIDEO" %}
+                      <div
+                        class="flex h-full w-full items-center justify-center
+                               bg-linear-to-br from-gray-700 to-gray-900 text-white"
+                      >
+                        <span class="opacity-90 drop-shadow">{{ icon("play", 56) }}</span>
+                      </div>
+                    {% else %}
+                      <img src="{{ m.url }}" alt="" class="h-full w-full object-cover" />
+                    {% endif %}
+                  </div>
+                {% endfor %}
+
+                <div
+                  class="pointer-events-none absolute right-2 top-2 z-10 inline-flex items-center
+                         gap-1 rounded bg-black/50 px-1.5 py-0.5 font-mono text-[10px]
+                         font-medium text-white"
+                >
+                  <span class="opacity-80">carousel ·</span>
+                  <span data-carousel-target="counter">1/{{ media|length }}</span>
+                </div>
+
+                <button
+                  type="button"
+                  data-carousel-target="prev"
+                  data-action="click->carousel#prev"
+                  aria-label="Previous item"
+                  hidden
+                  class="group absolute left-0 top-0 bottom-0 z-10 flex w-12 items-center
+                         justify-start pl-2 outline-none focus-visible:bg-black/10"
+                >
+                  <span
+                    class="carousel-disc flex h-7 w-7 items-center justify-center rounded-full
+                           bg-black/45 text-white opacity-90 transition-transform
+                           group-hover:scale-110 group-hover:bg-black/65"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  data-carousel-target="next"
+                  data-action="click->carousel#next"
+                  aria-label="Next item"
+                  class="group absolute right-0 top-0 bottom-0 z-10 flex w-12 items-center
+                         justify-end pr-2 outline-none focus-visible:bg-black/10"
+                >
+                  <span
+                    class="carousel-disc flex h-7 w-7 items-center justify-center rounded-full
+                           bg-black/45 text-white opacity-90 transition-transform
+                           group-hover:scale-110 group-hover:bg-black/65"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </span>
+                </button>
+
+                <div class="absolute right-0 bottom-2 left-0 z-10 flex justify-center gap-1.5">
+                  {% for m in media %}
+                    <button
+                      type="button"
+                      data-carousel-target="dot"
+                      data-action="click->carousel#go"
+                      data-index="{{ loop.index0 }}"
+                      {% if loop.first %}data-active{% endif %}
+                      aria-label="Show item {{ loop.index }} of {{ media|length }}"
+                      class="h-1.5 w-1.5 rounded-full border-none bg-white/60 transition-opacity
+                             data-active:bg-white"
+                    ></button>
+                  {% endfor %}
+                </div>
+              </div>
+            {% elif first and first.kind == "VIDEO" %}
+              <div
+                class="flex h-full w-full items-center justify-center
+                       bg-linear-to-br from-gray-700 to-gray-900 text-white"
+              >
+                <span class="opacity-90 drop-shadow">{{ icon("play", 56) }}</span>
+              </div>
+              <span
+                class="absolute right-2 top-2 rounded bg-black/50 px-1.5 py-0.5
+                       font-mono text-[10px] font-medium text-white"
+                >video</span
+              >
+            {% elif first %}
+              <img src="{{ first.url }}" alt="" class="h-full w-full object-cover" />
+            {% else %}
+              <div class="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                no media
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="space-y-1 px-3 pt-2.5 pb-3">
+            {% if selected.caption %}
+              {% set is_long = selected.caption|length > 125 %}
+              <p class="text-sm leading-snug">
+                <span class="font-semibold">{{ username }}</span>
+                <span class="whitespace-pre-wrap"
+                  >{% if is_long %}{{ selected.caption[:125] }}{% else %}{{ selected.caption }}{% endif %}</span
+                >{% if is_long %}<span class="text-gray-500">...more</span>{% endif %}
+              </p>
+            {% else %}
+              <p class="text-sm">
+                <span class="font-semibold">{{ username }}</span>
+                <span class="italic text-gray-500"> (no caption)</span>
+              </p>
+            {% endif %}
+            <p class="pt-1.5 text-[11px] text-gray-500">
+              {% if is_published %}Just now{% else %}Draft · pending publish{% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="device-stripe"></div>
+      <div class="device-header"></div>
+      <div class="device-sensors"></div>
+      <div class="device-btns"></div>
+      <div class="device-power"></div>
+    </div>
+  </div>
+</div>

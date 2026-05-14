@@ -23,6 +23,10 @@
             h.setAttribute("data-sidebar-collapsed", "");
           }
         } catch (e) {}
+        try {
+          var p = localStorage.getItem("posthole:phone-preset");
+          if (p) h.setAttribute("data-phone-preset", p);
+        } catch (e) {}
       })();
     </script>
 
@@ -42,10 +46,6 @@
   </head>
 
   <body class="h-screen overflow-hidden bg-(--bg) text-(--fg)">
-    {# WCAG 2.4.1 (Bypass Blocks): keyboard users tab past the sidenav and
-       topbar by activating this link. ``sr-only`` keeps it visually hidden
-       until focused. ``<main tabindex="-1">`` makes it a programmatic focus
-       target. #}
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50

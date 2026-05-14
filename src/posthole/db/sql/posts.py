@@ -9,8 +9,8 @@ GET_BY_ID = "SELECT * FROM posts WHERE id = ?"
 INSERT = (
     "INSERT INTO posts ("
     "id, platform, account_id, caption, status, created_at, "
-    "external_ref, media_url, media_type"
-    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "external_ref, media_url, media_type, media_items"
+    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 LIST_RECENT = "SELECT * FROM posts ORDER BY created_at DESC LIMIT ?"

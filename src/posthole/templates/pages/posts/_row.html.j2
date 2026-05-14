@@ -1,6 +1,6 @@
+{% from "macros/post_link.html.j2" import posts_link %}
 {% set username = usernames.get(p.account_id) %}
 {% set caption = (p.caption or '')|replace('\n', ' ')|trim %}
-{% set q_suffix = '?q=' ~ (q | urlencode) if q else '' %}
 
 <li>
   <a
@@ -8,7 +8,7 @@
     data-action="click->list-selection#select"
     data-list-selection-target="row"
     data-turbo-frame="post-detail"
-    href="/posts/{{ p.id }}{{ q_suffix }}"
+    href="{{ posts_link(post_id=p.id, q=q) }}"
     {% if selected and selected.id == p.id %}aria-current="page"{% endif %}
   >
     <div

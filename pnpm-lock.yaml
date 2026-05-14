@@ -14,6 +14,9 @@ importers:
       '@hotwired/turbo':
         specifier: ^8.0.13
         version: 8.0.23
+      devices.css:
+        specifier: ^0.2.0
+        version: 0.2.0
     devDependencies:
       '@tailwindcss/cli':
         specifier: ^4.3.0
@@ -704,6 +707,9 @@ packages:
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
+
+  devices.css@0.2.0:
+    resolution: {integrity: sha512-CE59M+4PuH87+A4clpC1xA/lkfCSGFWfeFx5sNadDdy1kXUqJ28SdTp+tBlwkHfI7G+h/Wf4Ddt9QGPLLlky3Q==}
 
   enhanced-resolve@5.21.2:
     resolution: {integrity: sha512-xe9vQb5kReirPUxgQrXA3ihgbCqssmTiM7cOZ+Gzu+VeGWgpV98lLZvp0dl4yriyAePcewxGUs9UpKD8PET9KQ==}
@@ -1680,6 +1686,8 @@ snapshots:
   decimal.js@10.6.0: {}
 
   detect-libc@2.1.2: {}
+
+  devices.css@0.2.0: {}
 
   enhanced-resolve@5.21.2:
     dependencies:
