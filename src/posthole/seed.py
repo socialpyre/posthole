@@ -7,7 +7,7 @@ Each platform owns its own seed list and flow under
    lifespan does not run under ASGITransport, so ``app.state.db`` needs
    to be set manually).
 2. Build an in-process httpx client.
-3. Iterate :data:`posthole.platforms.PLATFORMS`, calling each platform's
+3. Iterate :data:`posthole.routes.platforms.PLATFORMS`, calling each platform's
    ``seed_flow`` (or just the one named if a filter is supplied).
 """
 
@@ -18,7 +18,11 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from posthole.logging import get_logger
+from posthole.core.config import get_settings
+from posthole.core.logging import get_logger
+from posthole.db import Database
+from posthole.main import create_app
+from posthole.routes.platforms import PLATFORMS
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
@@ -32,10 +36,6 @@ async def seed_via_app(app: FastAPI, *, platform: str | None = None) -> int:
     Raises ``ValueError`` if ``platform`` is supplied but doesn't match a
     known platform name.
     """
-    from posthole.config import get_settings
-    from posthole.db import Database
-    from posthole.platforms import PLATFORMS
-
     if platform is not None:
         known = {p.name for p in PLATFORMS}
         if platform not in known:
@@ -61,6 +61,4 @@ async def seed_via_app(app: FastAPI, *, platform: str | None = None) -> int:
 
 def run(platform: str | None = None) -> int:
     """Synchronous entry for ``posthole seed [platform]``; returns # posts created."""
-    from posthole.main import create_app
-
     return asyncio.run(seed_via_app(create_app(), platform=platform))

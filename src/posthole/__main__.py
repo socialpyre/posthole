@@ -15,9 +15,9 @@ from pathlib import Path
 
 import uvicorn
 
-from posthole.config import get_settings
+from posthole.core.config import get_settings
+from posthole.core.logging import configure_logging
 from posthole.db.migrations import MIGRATIONS
-from posthole.logging import configure_logging
 
 
 def main() -> int:
@@ -53,20 +53,6 @@ def main() -> int:
     # No subcommand — launch the server.
     settings = get_settings()
     uvicorn.run("posthole.main:app", host=settings.host, port=settings.port)
-    return 0
-
-
-def _seed_command(*, platform: str | None) -> int:
-    """Run the in-process seeder against the configured database."""
-    from posthole import seed
-
-    try:
-        created = seed.run(platform=platform)
-    except ValueError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        return 1
-    scope = f" ({platform})" if platform else ""
-    print(f"Seeded {created} post(s){scope} via the in-process API.")
     return 0
 
 
@@ -146,6 +132,20 @@ def _read_current_version(path: str) -> int:
         return row[0] if row and row[0] is not None else -1
     finally:
         conn.close()
+
+
+def _seed_command(*, platform: str | None) -> int:
+    """Run the in-process seeder against the configured database."""
+    from posthole import seed
+
+    try:
+        created = seed.run(platform=platform)
+    except ValueError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 1
+    scope = f" ({platform})" if platform else ""
+    print(f"Seeded {created} post(s){scope} via the in-process API.")
+    return 0
 
 
 if __name__ == "__main__":

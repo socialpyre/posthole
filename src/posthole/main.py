@@ -1,63 +1,24 @@
-"""FastAPI application factory and ASGI lifespan for posthole."""
+"""FastAPI application factory for posthole."""
 
-import re
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from asgi_correlation_id import CorrelationIdMiddleware
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from starlette.routing import WebSocketRoute
 
 from posthole import __version__
-from posthole.config import get_settings
-from posthole.db import Database
-from posthole.logging import configure_logging, install_correlation_middleware
-from posthole.platforms import PLATFORMS
-from posthole.web import pages, system
-from posthole.web.middleware import install_template_context_middleware
-from posthole.web.templates import TEMPLATES_DIR
-
-# Real API clients send versioned URLs — Meta's ``/v22.0/...``, TikTok's
-# ``/v2/...``. The version is purely cosmetic for our purposes; strip it so
-# route handlers can match on the clean path.
-API_VERSION_RE = re.compile(r"^/v\d+(\.\d+)?(/|$)")
+from posthole.core.config import get_settings
+from posthole.core.exceptions import NotFoundError, handle_not_found
+from posthole.core.lifecycle import lifespan
+from posthole.core.logging import configure_logging
+from posthole.core.logging.middleware import CORRELATION_KWARGS
+from posthole.core.templates import TemplateContextMiddleware
+from posthole.routes import router
+from posthole.routes.pages.posts.exceptions import PostNotFoundError
+from posthole.routes.pages.posts.handlers import handle_post_not_found
+from posthole.routes.platforms import PLATFORMS, VersionStripMiddleware
 
 PKG = Path(__file__).parent
-
-
-@asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Open the database and (in dev) mount the hot-reload watcher."""
-    settings = get_settings()
-    _app.state.db = Database(settings.database_url)
-
-    try:
-        if settings.dev_reload:
-            # arel is in the dev dependency-group, not runtime — keep the import inline.
-            import arel
-
-            hot = arel.HotReload(
-                paths=[
-                    arel.Path(str(TEMPLATES_DIR)),
-                    arel.Path(str(PKG / "static")),
-                ],
-            )
-            # NOTE: arel.HotReload is an ASGI app (3-arg callable) but Starlette's
-            # add_websocket_route is typed as Callable[[WebSocket], Awaitable[None]].
-            # WebSocketRoute accepts ASGI apps directly via Callable[..., Any].
-            # Don't refactor to add_websocket_route until Starlette's typing relaxes.
-            _app.router.routes.append(WebSocketRoute("/hot-reload", hot, name="hot-reload"))
-
-            await hot.startup()
-            try:
-                yield
-            finally:
-                await hot.shutdown()
-        else:
-            yield
-    finally:
-        _app.state.db.close()
 
 
 def create_app() -> FastAPI:
@@ -80,47 +41,19 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json" if settings.docs_enabled else None,
     )
 
-    # Middleware registration order matters — Starlette wraps in reverse,
-    # so the LAST `add_middleware` call is the OUTERMOST layer at runtime.
-    # Register from "innermost" to "outermost":
-    #   1. install_template_context_middleware — stamps request.state for templates
-    #   2. install_correlation_middleware — sets correlation_id ContextVar
-    #   3. strip_api_version — rewrites /v22.0/... before any other code sees the path
-    install_template_context_middleware(app)
-    install_correlation_middleware(app)
-
-    @app.middleware("http")
-    async def strip_api_version(request: Request, call_next):  # type: ignore[no-untyped-def]
-        """Strip ``/v22.0/...`` prefixes so platform routes see clean paths."""
-        if API_VERSION_RE.match(request.url.path):
-            request.scope["path"] = re.sub(r"^/v[^/]+", "", request.url.path) or "/"
-        return await call_next(request)
+    # Middleware registration order matters — Starlette wraps in reverse
+    app.add_middleware(TemplateContextMiddleware)
+    app.add_middleware(CorrelationIdMiddleware, **CORRELATION_KWARGS)
+    app.add_middleware(VersionStripMiddleware)
 
     app.mount("/static", StaticFiles(directory=PKG / "static"), name="static")
 
-    # Order matters: UI routes first (so /, /accounts, /scenarios, /settings
-    # win literal matches), then system (/_health), THEN platform routers —
-    # those mount single-segment wildcards (IG's ``GET /{container_id}``) at
-    # root that would otherwise swallow admin paths.
-    #
-    # Platform router contract (enforced by ordering, not by code):
-    # 1. Platform routers MAY mount single-segment wildcards at the root
-    #    (e.g. ``GET /{container_id}``) because real API paths look like that.
-    # 2. Any new UI/admin route owned by ``pages`` or ``system`` MUST be
-    #    a literal path so FastAPI's first-match resolution picks it up
-    #    before falling through to a platform wildcard.
-    # 3. Two platforms mounting overlapping wildcards (e.g. both grabbing
-    #    ``GET /{id}``) will collide silently — the first registered wins.
-    #    If a future platform needs that shape, namespace it (mount under
-    #    ``/<platform>-containers/{id}`` etc.) rather than reordering.
-    app.include_router(pages.router)
-    app.include_router(system.router)
-
-    # One loop wires up everything platform-shaped: route surface + error
-    # rendering. Adding a third platform = one line in PLATFORMS.
+    app.add_exception_handler(NotFoundError, handle_not_found)
+    app.add_exception_handler(PostNotFoundError, handle_post_not_found)
     for plat in PLATFORMS:
-        app.include_router(plat.router)
         app.add_exception_handler(plat.error_type, plat.error_handler)
+
+    app.include_router(router)
 
     return app
 

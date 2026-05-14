@@ -620,7 +620,7 @@ wheels = [
 
 [[package]]
 name = "posthole"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "asgi-correlation-id" },
@@ -652,7 +652,7 @@ requires-dist = [
     { name = "fastapi-hotwire", specifier = ">=0.1" },
     { name = "jinja2", specifier = ">=3.1" },
     { name = "pydantic-settings", specifier = ">=2.6" },
-    { name = "structlog", specifier = ">=25.5.0" },
+    { name = "structlog", specifier = ">=25.5" },
 ]
 
 [package.metadata.requires-dev]

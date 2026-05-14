@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends, Request
 
+from posthole.core.logging import get_logger
 from posthole.db.migrations import MIGRATIONS
 from posthole.db.sql import pragmas, schema_version
-from posthole.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -19,20 +19,7 @@ if TYPE_CHECKING:
 
 
 class Database:
-    """A sqlite3 connection wrapper — owns the lifecycle and the cursor context.
-
-    DB access is via flat module-level functions in ``posthole.db.{posts,
-    accounts, oauth}``, each taking a ``Database`` as the first arg. This
-    object does NOT host store instances.
-
-    Designed for posthole's all-async handler model: every DB call happens on
-    the event loop, single-threaded. If a sync route handler is ever added,
-    revisit thread-safety — sqlite3 connections are not safe to share across
-    threads without serialization.
-
-    ``path`` is operator-controlled (``POSTHOLE_DATABASE_URL`` env var), not
-    user input — no path-traversal threat model.
-    """
+    """A sqlite3 connection wrapper — owns the lifecycle and the cursor context."""
 
     def __init__(self, path: str) -> None:
         self.path = path
@@ -56,14 +43,9 @@ class Database:
 
     @contextmanager
     def cursor(self) -> Iterator[sqlite3.Cursor]:
-        """Yield a cursor on the shared connection.
-
-        ``isolation_level=None`` means every statement is its own transaction
-        and commits immediately — fine for the single-row reads and writes
-        we have today. When multi-statement atomic writes appear, wrap them
-        in explicit ``BEGIN``/``COMMIT`` (or restructure this method).
-        """
+        """Yield a cursor on the shared connection."""
         cur = self._conn.cursor()
+
         try:
             yield cur
         finally:
