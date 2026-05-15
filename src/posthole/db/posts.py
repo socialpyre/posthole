@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Literal
 
+from posthole.db.query import like_needle
 from posthole.db.sql import posts as sql
 
 if TYPE_CHECKING:
@@ -153,20 +154,33 @@ def list_recent(
     *,
     limit: int = 50,
     platform: str | None = None,
+    q: str | None = None,
     status: PostStatus | None = None,
 ) -> list[Post]:
     """Return up to ``limit`` posts ordered by ``created_at`` descending.
 
-    ``platform`` and ``status`` are optional ``WHERE`` predicates pushed
-    into SQL — without them, in-Python filtering on a 50-row slice would
-    silently lie once the table outgrows the slice (sidebar counts would
-    show real totals, the list would show 50-row slices). Both are bound
-    by name so the same statement handles every combination.
+    ``platform``, ``status``, and ``q`` are optional ``WHERE`` predicates
+    pushed into SQL — without them, in-Python filtering on a 50-row slice
+    would silently lie once the table outgrows the slice (sidebar counts
+    would show real totals, the list would show 50-row slices). All
+    three are bound by name so the same statement handles every
+    combination.
+
+    ``q`` is a substring search across caption, ``account_id``, and the
+    joined ``accounts.username``. Blank or whitespace-only values are
+    treated as no search. SQLite's LIKE is ASCII-case-insensitive, which
+    matches the platform/content scope here; non-ASCII captions would
+    need a different strategy.
     """
     with db.cursor() as cur:
         cur.execute(
             sql.LIST_RECENT,
-            {"platform": platform, "status": status, "limit": limit},
+            {
+                "platform": platform,
+                "status": status,
+                "like_q": like_needle(q),
+                "limit": limit,
+            },
         )
         rows = cur.fetchall()
     return [_from_row(r) for r in rows]

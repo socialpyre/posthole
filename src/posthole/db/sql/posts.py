@@ -18,10 +18,22 @@ INSERT = (
 )
 
 LIST_RECENT = (
-    "SELECT * FROM posts "
-    "WHERE (:platform IS NULL OR platform = :platform) "
-    "AND (:status IS NULL OR status = :status) "
-    "ORDER BY created_at DESC LIMIT :limit"
+    "SELECT posts.* FROM posts "
+    # LEFT JOIN so posts without a matching accounts row still appear when
+    # the user isn't searching. The username is consulted only by the
+    # :like_q branch below.
+    "LEFT JOIN accounts ON accounts.id = posts.account_id "
+    "WHERE (:platform IS NULL OR posts.platform = :platform) "
+    "AND (:status IS NULL OR posts.status = :status) "
+    # :like_q is the wrapped ``%needle%`` form produced by
+    # ``posthole.db.query.like_needle`` — it pre-escapes ``%`` / ``_`` /
+    # ``\`` so the ESCAPE '\' clause makes literal wildcards behave.
+    # NULL short-circuits the LIKE branch when search is inactive.
+    "AND (:like_q IS NULL OR "
+    "     posts.caption LIKE :like_q ESCAPE '\\' "
+    "  OR posts.account_id LIKE :like_q ESCAPE '\\' "
+    "  OR accounts.username LIKE :like_q ESCAPE '\\') "
+    "ORDER BY posts.created_at DESC LIMIT :limit"
 )
 
 MARK_FAILED = "UPDATE posts SET status = 'failed', failure_reason = ? WHERE id = ?"

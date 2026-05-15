@@ -187,6 +187,43 @@ def test_post_list_recent_orders_newest_first_and_respects_limit(db: Database) -
     assert [p.id for p in capped] == [c.id, b.id]
 
 
+def test_post_list_recent_q_matches_caption_account_and_username(db: Database) -> None:
+    """``q`` is a substring search across caption, account_id, and username."""
+    # test_studio (id 178414000000001) is seeded by migration 0001;
+    # migration 0003 also seeds demo-carousel-0001 on that account, so
+    # we scope assertions to test-created ids.
+    on_seeded = posts.create(
+        db, platform="instagram", account_id="178414000000001", caption="golden hour"
+    )
+    sibling = posts.create(
+        db, platform="instagram", account_id="178414000000001", caption="late latte"
+    )
+    orphan = posts.create(db, platform="instagram", account_id="acc_xyz", caption="nothing here")
+    test_ids = {on_seeded.id, sibling.id, orphan.id}
+
+    caption_hit = [p.id for p in posts.list_recent(db, q="golden") if p.id in test_ids]
+    assert caption_hit == [on_seeded.id]
+
+    username_hit = {p.id for p in posts.list_recent(db, q="test_studio") if p.id in test_ids}
+    assert username_hit == {on_seeded.id, sibling.id}
+
+    account_id_hit = {p.id for p in posts.list_recent(db, q="acc_xyz") if p.id in test_ids}
+    assert account_id_hit == {orphan.id}
+
+
+def test_post_list_recent_q_blank_is_noop(db: Database) -> None:
+    """Empty/whitespace ``q`` behaves identically to ``q=None`` (no filter)."""
+    a = posts.create(db, platform="instagram", account_id="acc_1", caption="alpha")
+    b = posts.create(db, platform="instagram", account_id="acc_1", caption="beta")
+    test_ids = {a.id, b.id}
+
+    none_result = {p.id for p in posts.list_recent(db) if p.id in test_ids}
+    empty_result = {p.id for p in posts.list_recent(db, q="") if p.id in test_ids}
+    spaces_result = {p.id for p in posts.list_recent(db, q="   ") if p.id in test_ids}
+
+    assert none_result == empty_result == spaces_result == test_ids
+
+
 # ── Accounts ────────────────────────────────────────────────────────────────
 
 

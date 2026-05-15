@@ -42,21 +42,12 @@ def inbox_context(
         db,
         limit=INBOX_LIST_LIMIT,
         platform=active_platform,
+        q=q,
         # cast: list_recent's status param is the PostStatus literal; we know
         # active_status is one of those keys because normalize_status filters
         # against STATUS_KEYS (which is the literal's value set).
         status=active_status,  # ty: ignore[invalid-argument-type]
     )
-
-    if q and q.strip():
-        needle = q.lower().strip()
-        rows = [
-            p
-            for p in rows
-            if needle in (p.caption or "").lower()
-            or needle in p.account_id.lower()
-            or needle in (usernames.get(p.account_id) or "").lower()
-        ]
 
     return {
         "posts": rows,

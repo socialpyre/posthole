@@ -135,6 +135,36 @@ async def test_search_no_match_renders_empty_state(client: httpx.AsyncClient) ->
     assert "Clear filters" in response.text
 
 
+async def test_search_finds_rows_beyond_list_limit(client: httpx.AsyncClient, db: Database) -> None:
+    """Search hits rows past the 50-row ``LIMIT`` — the load-bearing fix.
+
+    The previous in-Python filter ran against the already-sliced result,
+    so a matching row outside the slice silently disappeared. SQL-side
+    LIKE applies the filter before ``LIMIT``, so the match surfaces.
+    """
+    # Create 60 filler posts on the seeded test_studio account first so
+    # they're older (lower created_at) than the needle. The needle is
+    # the newest row so it'd appear in the slice — that's not the test.
+    # We want the OPPOSITE: needle as the OLDEST row, past the limit.
+    needle = posts.create(
+        db, platform="instagram", account_id="178414000000001", caption="needle-in-haystack"
+    )
+    for i in range(60):
+        posts.create(
+            db,
+            platform="instagram",
+            account_id="178414000000001",
+            caption=f"filler post {i}",
+        )
+
+    # Without the SQL fix, the needle is the 61st-newest row, well past
+    # the limit=50 slice; the old Python filter would never see it.
+    response = await client.get("/posts?q=needle-in-haystack")
+
+    assert response.status_code == 200
+    assert needle.id in response.text
+
+
 async def test_platform_filter_scopes_list(client: httpx.AsyncClient, db: Database) -> None:
     """``?platform=instagram`` shows only IG rows; ``?platform=tiktok`` only TT rows."""
     ig_account = accounts.get(db, "178414000000001")
