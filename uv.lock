@@ -288,16 +288,16 @@ wheels = [
 
 [[package]]
 name = "fastapi-hotwire"
-version = "0.2.0"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
     { name = "jinja2" },
     { name = "markupsafe" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3d/1a/07c0feb72ad32cc89997011675ea6fbb8fb11d8713aaa33817416df8e760/fastapi_hotwire-0.2.0.tar.gz", hash = "sha256:6a270b9a3568bcaf970e10ff1b8f3222f56f4230c8306d143f58f2c02a040b6d", size = 63965, upload-time = "2026-05-09T00:26:17.707Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/eb/f9a5ba4047a04b4c43f300c5ef1cd862bf787d63802c650dc4e8aef82366/fastapi_hotwire-0.3.0.tar.gz", hash = "sha256:90f0b5dd2c5f7598f9975e800f59a581a07c2705b1f81f1126afdb3d972d901a", size = 62890, upload-time = "2026-05-15T03:59:55.493Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/b2/3bc81082fef326c7596a452cd9cdd8e7a675273e13d783268ec33d7cb0c2/fastapi_hotwire-0.2.0-py3-none-any.whl", hash = "sha256:c8c3f480ef3070d473e9682f9f98bcb7fc6c3ef1c7e0fa8e40c91811372077fe", size = 20647, upload-time = "2026-05-09T00:26:16.533Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/f9/e4b74ecc453751c78c4576320804775ab350477eb594cefd9c4cce0bd13f/fastapi_hotwire-0.3.0-py3-none-any.whl", hash = "sha256:87b65b7dc7654b63c67f3eded03403b5811a4abbf7b2ad73ddc01a084b153e3f", size = 18896, upload-time = "2026-05-15T03:59:54.191Z" },
 ]
 
 [[package]]
@@ -649,7 +649,7 @@ dev = [
 requires-dist = [
     { name = "asgi-correlation-id", specifier = ">=4.3.4" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115" },
-    { name = "fastapi-hotwire", specifier = ">=0.1" },
+    { name = "fastapi-hotwire", specifier = ">=0.3" },
     { name = "jinja2", specifier = ">=3.1" },
     { name = "pydantic-settings", specifier = ">=2.6" },
     { name = "structlog", specifier = ">=25.5" },
