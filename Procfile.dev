@@ -1,3 +1,13 @@
-web: pnpm exec varlock run -- env POSTHOLE_DEV_RELOAD=1 uv run fastapi dev src/posthole/main.py --port 5176
-esbuild: node scripts/build.mjs --watch
-tailwind: sleep 999999 | pnpm exec tailwindcss -i src/posthole/ui/styles.css -o src/posthole/static/app.css --watch
+# `exec` so the wrapper shell isn't sitting between honcho and the real
+# process — honcho sends SIGTERM to the program's pgid, but if shell stays
+# in the chain, the signal can miss the actual child. We also skip
+# `pnpm exec` (calling `node_modules/.bin/<bin>` directly) and `uv run`
+# (calling `.venv/bin/<bin>` directly) to remove process layers that have
+# historically swallowed signals and orphaned the python worker.
+web: exec node_modules/.bin/varlock run -- env POSTHOLE_DEV_RELOAD=1 .venv/bin/uvicorn posthole.main:app --reload --reload-dir src/posthole --port 5176
+esbuild: exec node scripts/build.mjs --watch
+# tailwindcss --watch exits when stdin closes, so the `sleep 999999 |` pipe
+# keeps stdin open forever. Can't `exec` past a pipeline (the wrapper shell
+# has to stick around to manage both sides), but honcho's pgroup signaling
+# tears the whole pipeline down cleanly.
+tailwind: sleep 999999 | node_modules/.bin/tailwindcss -i src/posthole/ui/styles.css -o src/posthole/static/app.css --watch
