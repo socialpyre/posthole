@@ -8,13 +8,16 @@
 {% set carousel_count = p.media|length if p.media|length > 1 else 0 %}
 
 <li class="border-b border-dashed border-(--border) last:border-b-0">
+  {# Selection styling comes from the global `[aria-current="page"]` CSS
+     rule in styles.css — driven by `aria-current` only, not Tailwind
+     classes. The Stimulus `list-selection` controller updates aria-current
+     optimistically on click; if we also baked selection classes here, the
+     Turbo Frame swap (which only replaces the detail pane) would leave
+     the previous selection's classes behind and two rows would look
+     selected at once. #}
   <a
-    class="relative flex gap-3 border-l-2 px-4 py-3 transition
-           {% if is_selected %}
-      border-(--accent) bg-(--selected)
-    {% else %}
-      border-transparent hover:bg-(--hover)
-    {% endif %}"
+    class="relative flex gap-3 border-l-2 border-transparent px-4 py-3 transition
+           hover:bg-(--hover)"
     data-action="click->list-selection#select"
     data-list-selection-target="row"
     data-turbo-frame="post-detail"

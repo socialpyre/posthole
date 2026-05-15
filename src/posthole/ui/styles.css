@@ -240,7 +240,12 @@ html[data-drawer-open] [data-drawer-overlay] {
   display: none;
 }
 
-[aria-current="page"] {
+/* Scoped to inbox rows: the sidenav also uses aria-current but styles
+   itself via Tailwind utilities (--accent-bg / --accent-text) — letting
+   this rule leak there would override the sidenav's intended palette.
+   Keying off the list-selection target attribute keeps the rule paired
+   with the Stimulus controller that drives it. */
+[data-list-selection-target="row"][aria-current="page"] {
   background: var(--selected);
   border-left-color: var(--accent);
 }
