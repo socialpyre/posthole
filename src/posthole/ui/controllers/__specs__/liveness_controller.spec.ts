@@ -15,7 +15,6 @@ const FIXTURE = `
 
 type Liveness = InstanceType<typeof LivenessController>;
 
-// EventSource isn't part of jsdom — fake it.
 type Listener = (event: Event) => void;
 class FakeEventSource {
   static instances: FakeEventSource[] = [];
@@ -120,7 +119,9 @@ describe("liveness_controller", () => {
     currentSource().emit("ping");
     expect(root.dataset.livenessState).toBe("live");
 
-    vi.advanceTimersByTime(60_000);
+    // Past the 5s grace window but before the 15s watchdog — proves the
+    // grace timer was actually canceled rather than just delayed.
+    vi.advanceTimersByTime(10_000);
     expect(root.dataset.livenessState).toBe("live");
   });
 
@@ -153,5 +154,173 @@ describe("liveness_controller", () => {
 
     currentSource().emit("ping");
     expect(root.dataset.livenessState).toBe("live");
+  });
+
+  it("watchdog: silent disconnect with no error event still flips to reconnecting + reopens", async () => {
+    const { root, unmount } = await mountController<Liveness>({
+      identifier: "liveness",
+      controllerClass: LivenessController,
+      html: FIXTURE,
+    });
+    teardown = unmount;
+
+    expect(FakeEventSource.instances.length).toBe(1);
+
+    // No error, no pings — the server is silently dead, EventSource is stuck
+    // on a half-open socket. The watchdog must catch it.
+    vi.advanceTimersByTime(15_000);
+    expect(root.dataset.livenessState).toBe("reconnecting");
+    // The source was reopened so the browser drops the stale socket.
+    expect(FakeEventSource.instances.length).toBe(2);
+
+    // After the existing 5s grace, with still no recovery, go offline.
+    vi.advanceTimersByTime(5_000);
+    expect(root.dataset.livenessState).toBe("offline");
+  });
+
+  it("watchdog: ping on the reopened source recovers and re-arms the watchdog", async () => {
+    const { root, unmount } = await mountController<Liveness>({
+      identifier: "liveness",
+      controllerClass: LivenessController,
+      html: FIXTURE,
+    });
+    teardown = unmount;
+
+    vi.advanceTimersByTime(15_000); // watchdog fires, source reopens
+    expect(FakeEventSource.instances.length).toBe(2);
+    expect(root.dataset.livenessState).toBe("reconnecting");
+
+    // A ping on the NEW source — proves we're listening on the reopened one.
+    currentSource().emit("ping");
+    expect(root.dataset.livenessState).toBe("live");
+
+    // Watchdog should be re-armed: another silent stretch trips it again.
+    vi.advanceTimersByTime(15_000);
+    expect(root.dataset.livenessState).toBe("reconnecting");
+    expect(FakeEventSource.instances.length).toBe(3);
+  });
+
+  it("watchdog: recovery via ping re-arms the watchdog even after an error", async () => {
+    const { root, unmount } = await mountController<Liveness>({
+      identifier: "liveness",
+      controllerClass: LivenessController,
+      html: FIXTURE,
+    });
+    teardown = unmount;
+
+    // Transient drop + recovery via ping.
+    currentSource().emit("error");
+    expect(root.dataset.livenessState).toBe("reconnecting");
+    currentSource().emit("ping");
+    expect(root.dataset.livenessState).toBe("live");
+
+    // Watchdog must still be running after recovery — 15s of silence trips it.
+    vi.advanceTimersByTime(15_000);
+    expect(root.dataset.livenessState).toBe("reconnecting");
+  });
+
+  it("repeated errors after grace expires do not bounce offline back to reconnecting", async () => {
+    const { root, unmount } = await mountController<Liveness>({
+      identifier: "liveness",
+      controllerClass: LivenessController,
+      html: FIXTURE,
+    });
+    teardown = unmount;
+
+    currentSource().emit("error");
+    vi.advanceTimersByTime(5_000);
+    expect(root.dataset.livenessState).toBe("offline");
+
+    // Simulate the browser's auto-retry storm: each failed reconnect fires
+    // another `error`. None of them should flip us back to "reconnecting".
+    for (let i = 0; i < 5; i++) {
+      currentSource().emit("error");
+      vi.advanceTimersByTime(3_000);
+    }
+    expect(root.dataset.livenessState).toBe("offline");
+  });
+
+  it("watchdog: mid-grace silence still re-arms the watchdog for a second silent stall", async () => {
+    const { root, unmount } = await mountController<Liveness>({
+      identifier: "liveness",
+      controllerClass: LivenessController,
+      html: FIXTURE,
+    });
+    teardown = unmount;
+
+    // First: transient drop arms the grace timer.
+    currentSource().emit("error");
+    expect(root.dataset.livenessState).toBe("reconnecting");
+
+    // Watchdog fires while grace is still armed — onError short-circuits,
+    // but the watchdog must still re-arm itself.
+    vi.advanceTimersByTime(15_000);
+    expect(FakeEventSource.instances.length).toBe(2);
+
+    // Grace fires → offline.
+    vi.advanceTimersByTime(5_000);
+    expect(root.dataset.livenessState).toBe("offline");
+
+    // Recover, then a second silent stall: the watchdog should still trip.
+    currentSource().emit("ping");
+    expect(root.dataset.livenessState).toBe("live");
+    vi.advanceTimersByTime(15_000);
+    expect(root.dataset.livenessState).toBe("reconnecting");
+    expect(FakeEventSource.instances.length).toBe(3);
+  });
+
+  it("watchdog: error on the reopened source does not break the grace guard", async () => {
+    const { root, unmount } = await mountController<Liveness>({
+      identifier: "liveness",
+      controllerClass: LivenessController,
+      html: FIXTURE,
+    });
+    teardown = unmount;
+
+    vi.advanceTimersByTime(15_000); // watchdog fires, source reopens
+    expect(root.dataset.livenessState).toBe("reconnecting");
+    expect(FakeEventSource.instances.length).toBe(2);
+
+    // Reopened source immediately errors — guard should swallow it so we
+    // don't restart the grace cycle.
+    currentSource().emit("error");
+    expect(root.dataset.livenessState).toBe("reconnecting");
+    vi.advanceTimersByTime(5_000);
+    expect(root.dataset.livenessState).toBe("offline");
+  });
+
+  it("watchdog: pings emitted on a closed source are no-ops (no zombie listeners)", async () => {
+    const { root, unmount } = await mountController<Liveness>({
+      identifier: "liveness",
+      controllerClass: LivenessController,
+      html: FIXTURE,
+    });
+    teardown = unmount;
+
+    const stale = currentSource();
+    vi.advanceTimersByTime(15_000); // watchdog reopens
+    expect(FakeEventSource.instances.length).toBe(2);
+    expect(root.dataset.livenessState).toBe("reconnecting");
+
+    // Stale source's listeners must have been detached on close.
+    stale.emit("ping");
+    expect(root.dataset.livenessState).toBe("reconnecting");
+  });
+
+  it("watchdog: regular pings reset the timer so the badge stays live", async () => {
+    const { root, unmount } = await mountController<Liveness>({
+      identifier: "liveness",
+      controllerClass: LivenessController,
+      html: FIXTURE,
+    });
+    teardown = unmount;
+
+    // Server is healthy: ping every 10s, well inside the 15s window.
+    for (let i = 0; i < 5; i++) {
+      vi.advanceTimersByTime(10_000);
+      currentSource().emit("ping");
+    }
+    expect(root.dataset.livenessState).toBe("live");
+    expect(FakeEventSource.instances.length).toBe(1);
   });
 });
