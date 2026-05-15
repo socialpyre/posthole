@@ -1,22 +1,118 @@
 {% from "macros/icon.html.j2" import icon %}
+{% from "macros/post_link.html.j2" import posts_link %}
 
+{% macro section_label(text) %}
+  <p
+    data-collapse-hide
+    class="mt-4 px-2.5 pt-0 pb-1.5 font-sans text-[10px] font-semibold
+           tracking-[0.06em] text-(--muted) uppercase first:mt-2"
+  >
+    {{ text }}
+  </p>
+{% endmacro %}
+
+{% macro section_rule() %}
+  <div
+    aria-hidden="true"
+    class="mx-1 my-2 hidden h-px bg-(--border-mid) sidebar-collapsed:block"
+  ></div>
+{% endmacro %}
+
+{% macro nav_item(label, ic=none, dot_color=none, swatch=none, href=none, count=none, current=false, disabled=false) %}
+  {% set base = "flex h-9 items-center gap-2.5 rounded-md px-2.5 text-[13px] transition" %}
+  {%
+    set state = "bg-(--accent-bg) font-semibold text-(--accent-text)" if current
+    else "text-(--fg) hover:bg-(--hover)"
+  %}
+  {% set glyph_classes = "text-(--accent-text)" if current else "text-(--sub)" %}
+
+  {% if disabled %}
+    <span
+      title="{{ label }} · coming soon"
+      class="{{ base }} cursor-not-allowed text-(--muted) opacity-65"
+    >
+      {% if ic %}
+        <span class="shrink-0 text-(--muted)">{{ icon(ic, 15) }}</span>
+      {% elif dot_color %}
+        <span
+          class="ml-[3.5px] mr-[3.5px] inline-block h-2 w-2 shrink-0 rounded-full"
+          style="background: {{ dot_color }}"
+        ></span>
+      {% elif swatch %}
+        <span
+          class="shrink-0 h-3.5 w-3.5 rounded opacity-60"
+          style="background: {{ swatch }}"
+        ></span>
+      {% endif %}
+      <span data-collapse-hide class="flex-1 truncate">{{ label }}</span>
+      <span
+        data-collapse-hide
+        class="rounded border border-(--border-mid) px-1 py-0.5 font-mono
+               text-[9px] font-bold tracking-[0.04em] text-(--muted)"
+        >SOON</span
+      >
+    </span>
+  {% else %}
+    <a
+      href="{{ href }}"
+      data-controller="sidebar"
+      data-action="click->sidebar#close"
+      {% if current %}aria-current="page"{% endif %}
+      class="{{ base }} {{ state }}"
+    >
+      {% if ic %}
+        <span class="shrink-0 {{ glyph_classes }}">{{ icon(ic, 15) }}</span>
+      {% elif dot_color %}
+        <span
+          class="ml-[3.5px] mr-[3.5px] inline-block h-2 w-2 shrink-0 rounded-full"
+          style="background: {{ dot_color }}"
+        ></span>
+      {% elif swatch %}
+        <span class="shrink-0 h-3.5 w-3.5 rounded" style="background: {{ swatch }}"></span>
+      {% endif %}
+      <span data-collapse-hide class="flex-1 truncate">{{ label }}</span>
+      {% if count is not none %}
+        <span
+          data-collapse-hide
+          class="font-mono text-[11px] font-medium
+                 {% if current %}text-(--accent-text){% else %}text-(--muted){% endif %}"
+          >{{ count }}</span
+        >
+      {% endif %}
+    </a>
+  {% endif %}
+{% endmacro %}
+
+{% set counts = request.state.sidebar_counts | default({"posts": 0, "accounts": 0, "published": 0, "pending": 0, "failed": 0}) %}
+{% set path = request.url.path %}
+{% set on_posts = path is current_for("/posts") %}
+{% set url_filters = request.state.url_filters | default({"platform": none, "status": none}) %}
+{% set active_status = url_filters.status if on_posts else none %}
+{% set active_platform = url_filters.platform if on_posts else none %}
+
+{# Gradient swatches for the mobile-only Platform section. Tied to brand cues:
+   Instagram is the sunset gradient, TikTok is its cyan/pink combo. #}
 {%
-  set items = [
-    ("/posts", "Inbox", "inbox"),
-    ("/accounts", "Accounts", "users"),
-    ("/scenarios", "Scenarios", "beaker"),
-    ("/settings", "Settings", "cog"),
-  ]
+  set platform_swatches = {
+    "instagram": "linear-gradient(135deg,#fb7185 0%,#f59e0b 100%)",
+    "tiktok":    "linear-gradient(135deg,#25f4ee 0%,#fe2c55 100%)",
+  }
 %}
 
 <aside
   data-posthole-sidebar
-  class="fixed inset-y-0 left-0 z-50 flex w-65 flex-col border-r border-(--border)
+  class="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-(--border)
          bg-(--sidebar) shadow-[4px_0_24px_rgba(0,0,0,.12)]
-         lg:static lg:z-auto lg:w-55 lg:shadow-none"
+         lg:static lg:z-auto lg:w-[220px] lg:shadow-none"
 >
-  <div class="flex items-center justify-between border-b border-(--border) px-3 py-2 lg:hidden">
-    <span class="font-mono text-sm font-semibold">posthole</span>
+  <div
+    class="flex items-center justify-between gap-2 border-b border-(--border)
+           px-3 py-2 lg:hidden"
+  >
+    <a href="/" class="flex min-w-0 items-center gap-2 text-(--accent)">
+      {{ icon("logo", 20) }}
+      <span class="font-sans text-[15px] font-bold tracking-[-0.01em] text-(--fg)">posthole</span>
+    </a>
     <button
       type="button"
       data-controller="sidebar"
@@ -29,57 +125,82 @@
   </div>
 
   <nav aria-label="Primary" class="flex-1 overflow-y-auto px-2 py-2">
-    <p
-      data-collapse-hide
-      class="mt-1 px-2.5 pt-1 pb-1.5 font-mono text-[10px] font-bold tracking-[0.06em] text-(--muted) uppercase"
-    >
-      Workspace
-    </p>
+    {{ section_label("Inbox") }}
 
-    <ul class="space-y-0.5">
-      {% for path, label, ic in items %}
-        {% set is_current = request.url.path is current_for(path) %}
+    {{
+      nav_item(label="All posts", ic="inbox", count=counts.posts,
+      href=posts_link(platform=active_platform),
+      current=(on_posts and not active_status))
+    }}
+    {{
+      nav_item(label="Published", dot_color="#10b981", count=counts.published,
+      href=posts_link(platform=active_platform, status="published"),
+      current=(on_posts and active_status == "published"))
+    }}
+    {{
+      nav_item(label="Publishing", dot_color="#f59e0b", count=counts.pending,
+      href=posts_link(platform=active_platform, status="pending"),
+      current=(on_posts and active_status == "pending"))
+    }}
+    {{
+      nav_item(label="Errors", dot_color="#ef4444", count=counts.failed,
+      href=posts_link(platform=active_platform, status="failed"),
+      current=(on_posts and active_status == "failed"))
+    }}
 
-        <li>
-          <a
-            href="{{ path }}"
-            data-controller="sidebar"
-            data-action="click->sidebar#close"
-            {% if is_current %}aria-current="page"{% endif %}
-            class="relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] transition
-              {% if is_current %}
-              bg-(--accent-bg) font-semibold text-(--accent-text) before:content-['']
-              before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5
-              before:rounded-r before:bg-(--accent)
-            {% else %}
-              hover:bg-(--hover)
-            {% endif %}"
-          >
-            <span
-              class="shrink-0 {% if is_current %}text-(--accent-text){% else %}text-(--muted){% endif %}"
-            >
-              {{ icon(ic, 16) }}
-            </span>
-            <span data-collapse-hide class="flex-1">{{ label }}</span>
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
+    {{ section_label("Test harness") }}
+    {{ section_rule() }}
+
+    {{
+      nav_item(label="Scenarios", ic="beaker",
+      href="/scenarios",
+      current=(path is current_for("/scenarios")))
+    }}
+    {{ nav_item(label="Outgoing webhooks", ic="send", disabled=true) }}
+
+    {{ section_label("Workspace") }}
+    {{ section_rule() }}
+
+    {{
+      nav_item(label="Test accounts", ic="users", count=counts.accounts,
+      href="/accounts",
+      current=(path is current_for("/accounts")))
+    }}
+    {{
+      nav_item(label="Settings", ic="cog",
+      href="/settings",
+      current=(path is current_for("/settings")))
+    }}
+
+    {# Mobile-only platform picker — desktop relies on the in-list filter pills. #}
+    <div class="lg:hidden">
+      {{ section_label("Platform") }}
+      {{
+        nav_item(label="Instagram", swatch=platform_swatches["instagram"],
+        href=posts_link(platform="instagram", status=active_status),
+        current=(on_posts and active_platform == "instagram"))
+      }}
+      {{
+        nav_item(label="TikTok", swatch=platform_swatches["tiktok"],
+        href=posts_link(platform="tiktok", status=active_status),
+        current=(on_posts and active_platform == "tiktok"))
+      }}
+    </div>
   </nav>
 
-  <div class="hidden border-t border-(--border) p-2 lg:block">
+  <div class="hidden border-t border-(--border) lg:block">
     <button
       type="button"
       data-controller="sidebar"
       data-action="click->sidebar#toggleCollapse"
       aria-label="Toggle sidebar"
-      class="flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-(--sub) hover:bg-(--hover)"
+      class="flex w-full items-center justify-start gap-2 px-2.5 py-2
+             font-sans text-[11px] text-(--muted) hover:text-(--fg)
+             sidebar-collapsed:justify-center sidebar-collapsed:px-0"
     >
-      <span data-collapse-hide class="inline-flex items-center gap-1.5">
-        {{ icon("chev-left", 14) }}
-        <span class="font-mono text-[11px]">Collapse</span>
-      </span>
-      <span data-collapse-show class="hidden"> {{ icon("chev-right", 14) }} </span>
+      <span data-collapse-hide class="inline-flex">{{ icon("chev-left", 14) }}</span>
+      <span data-collapse-show class="hidden">{{ icon("chev-right", 14) }}</span>
+      <span data-collapse-hide>Collapse</span>
     </button>
   </div>
 </aside>

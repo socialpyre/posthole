@@ -1,0 +1,34 @@
+{% from "macros/icon.html.j2" import icon %}
+
+{# The list is empty either because nothing has ever been captured, or because
+   the current filters yield no matches. The two states want very different
+   copy — onboarding hint vs. a way back to a useful state. #}
+{% set has_filters = q or platform or status %}
+
+<div class="flex h-full w-full items-center justify-center px-6 py-10">
+  <div class="max-w-sm text-center">
+    <div class="mx-auto mb-3 inline-flex text-(--muted)">{{ icon("inbox", 28) }}</div>
+
+    {% if has_filters %}
+      <h2 class="font-sans text-[13px] font-semibold text-(--fg)">No matching posts</h2>
+      <p class="mt-1 text-[12px] text-(--sub)">Nothing in the inbox matches these filters.</p>
+      <a
+        href="/posts"
+        class="mt-4 inline-flex items-center gap-1.5 rounded-md border border-(--border-mid)
+               bg-(--panel) px-3 py-1.5 font-sans text-[12px] font-medium text-(--fg)
+               hover:bg-(--hover)"
+      >
+        Clear filters
+      </a>
+    {% else %}
+      <h2 class="font-sans text-[13px] font-semibold text-(--fg)">No posts captured yet</h2>
+      <p class="mt-1 text-[12px] text-(--sub)">
+        Make a post from your app — it'll appear here in milliseconds.
+      </p>
+      <pre
+        class="mt-4 overflow-x-auto rounded-md border border-(--border) bg-(--code)
+               px-3 py-2.5 text-left font-mono text-[11px] leading-relaxed text-(--fg)"
+      ><span class="text-(--muted)">$ </span>export GRAPH_API_BASE=http://localhost:8025</pre>
+    {% endif %}
+  </div>
+</div>

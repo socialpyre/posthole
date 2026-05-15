@@ -1,6 +1,9 @@
 {% from "macros/icon.html.j2" import icon %}
 
-<header class="flex h-12 shrink-0 items-center gap-3 border-b border-(--border) bg-(--panel) px-3">
+<header
+  class="flex h-13 shrink-0 items-center gap-3 border-b border-(--border)
+         bg-(--panel) px-4 lg:h-12"
+>
   <button
     aria-label="Open menu"
     class="flex h-8 w-8 items-center justify-center rounded text-(--sub) hover:bg-(--hover) lg:hidden"
@@ -11,16 +14,19 @@
     {{ icon("menu", 18) }}
   </button>
 
-  <a
-    aria-label="posthole home"
-    class="flex items-center gap-2 font-mono text-sm font-semibold tracking-tight"
-    href="/"
-  >
-    <span>posthole</span>
+  <a aria-label="posthole home" class="flex items-center gap-2 pr-2 text-(--accent)" href="/">
+    {{ icon("logo", 20) }}
+    <span class="font-sans text-[14px] font-bold tracking-[-0.01em] text-(--fg)">posthole</span>
+    <span
+      class="font-mono text-[10px] text-(--muted) leading-none
+             rounded border border-(--border-mid) px-1.5 py-0.5"
+    >
+      v{{ APP_VERSION }}
+    </span>
   </a>
 
   {% if request.url.path is current_for('/posts') %}
-    <div class="ml-2 hidden flex-1 sm:block">
+    <div class="hidden flex-1 sm:block">
       <label
         class="relative block max-w-130"
         data-controller="search"
@@ -71,17 +77,34 @@
     <span class="flex-1"></span>
   {% endif %}
 
-  <div class="ml-auto flex items-center gap-1.5">
+  <div class="ml-auto flex items-center gap-2">
+    <span
+      data-controller="liveness"
+      data-liveness-stream-value="/_health/stream"
+      data-liveness-state="live"
+      aria-label="Server connection status"
+      class="liveness-pill hidden items-center gap-1.5 rounded-md border
+             px-2.5 py-1 font-sans text-[11px] font-semibold sm:inline-flex"
+    >
+      <span class="liveness-dot h-1.5 w-1.5 rounded-full"></span>
+      <span data-liveness-target="label" data-liveness-label="live">live</span>
+      <span data-liveness-target="label" data-liveness-label="reconnecting" hidden
+        >reconnecting</span
+      >
+      <span data-liveness-target="label" data-liveness-label="offline" hidden>offline</span>
+    </span>
+
     <button
       aria-label="Cycle theme: light, dark, system"
-      class="flex h-7 w-7 items-center justify-center rounded text-(--sub) hover:bg-(--hover)"
+      class="flex h-[30px] w-[30px] items-center justify-center rounded-md
+             border border-(--border) text-(--sub) hover:bg-(--hover)"
       data-action="click->theme#cycle"
       data-controller="theme"
       type="button"
     >
-      <span data-theme-icon="light">{{ icon("sun", 16) }}</span>
-      <span data-theme-icon="dark">{{ icon("moon", 16) }}</span>
-      <span data-theme-icon="system">{{ icon("monitor", 16) }}</span>
+      <span data-theme-icon="light">{{ icon("sun", 15) }}</span>
+      <span data-theme-icon="dark">{{ icon("moon", 15) }}</span>
+      <span data-theme-icon="system">{{ icon("monitor", 15) }}</span>
     </button>
   </div>
 </header>

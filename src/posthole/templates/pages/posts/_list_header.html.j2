@@ -1,7 +1,38 @@
-<header class="sticky top-0 z-10 border-b border-(--border) bg-(--panel) px-4 py-3">
-  <h1 class="font-sans text-[15px] font-semibold tracking-tight">Posts</h1>
+{% from "macros/icon.html.j2" import icon %}
+{% from "macros/filters.html.j2" import filter_bar, filter_pill %}
+{% from "macros/post_link.html.j2" import posts_link %}
 
-  <p class="font-mono text-[11px] text-(--muted)">
-    {{ total }} post{{ '' if total == 1 else 's' }} captured
-  </p>
+<header class="sticky top-0 z-10 flex-shrink-0 border-b border-(--border) bg-(--panel) px-3 pt-2.5">
+  <div class="mb-2 flex items-center justify-between gap-2">
+    <div>
+      <h1 class="font-sans text-[13px] font-semibold tracking-tight">Posts</h1>
+      <p class="font-mono text-[11px] text-(--muted)">{{ total }} captured</p>
+    </div>
+    <div class="flex items-center gap-0.5">
+      {% for name, label in [("refresh", "Refresh"), ("filter", "Filter"), ("trash", "Clear")] %}
+        <button
+          type="button"
+          aria-label="{{ label }}"
+          aria-disabled="true"
+          title="{{ label }} · coming soon"
+          class="flex h-7 w-7 cursor-not-allowed items-center justify-center
+                 rounded text-(--muted) hover:bg-(--hover)"
+        >
+          {{ icon(name, 14) }}
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="-mx-1 overflow-x-auto px-1 pb-2">
+    {% call filter_bar() %}
+      {{ filter_pill(label="All", on=(not platform), href=posts_link(q=q, status=status)) }}
+      {% for key, plabel in platforms %}
+        {{
+          filter_pill(label=plabel, on=(platform == key),
+          href=posts_link(q=q, platform=key, status=status))
+        }}
+      {% endfor %}
+    {% endcall %}
+  </div>
 </header>

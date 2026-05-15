@@ -127,11 +127,89 @@ async def test_search_filters_inbox(client: httpx.AsyncClient, db: Database) -> 
 
 
 async def test_search_no_match_renders_empty_state(client: httpx.AsyncClient) -> None:
-    """``?q=`` with no matches renders the empty-state copy."""
+    """``?q=`` with no matches renders the filtered-empty copy + Clear filters."""
     response = await client.get("/posts?q=zzzzzz_no_match")
 
     assert response.status_code == 200
-    assert "No posts yet" in response.text
+    assert "No matching posts" in response.text
+    assert "Clear filters" in response.text
+
+
+async def test_platform_filter_scopes_list(client: httpx.AsyncClient, db: Database) -> None:
+    """``?platform=instagram`` shows only IG rows; ``?platform=tiktok`` only TT rows."""
+    ig_account = accounts.get(db, "178414000000001")
+    tt_account = accounts.get_by_username(db, "test_creator")
+    assert ig_account is not None
+    assert tt_account is not None
+    ig = posts.create(db, platform="instagram", account_id=ig_account.id, caption="ig only")
+    tt = posts.create(db, platform="tiktok", account_id=tt_account.id, caption="tt only")
+
+    ig_response = await client.get("/posts?platform=instagram")
+    assert ig_response.status_code == 200
+    assert ig.id in ig_response.text
+    assert tt.id not in ig_response.text
+
+    tt_response = await client.get("/posts?platform=tiktok")
+    assert tt_response.status_code == 200
+    assert tt.id in tt_response.text
+    assert ig.id not in tt_response.text
+
+
+async def test_platform_filter_garbage_falls_back_to_all(
+    client: httpx.AsyncClient, db: Database
+) -> None:
+    """``?platform=GARBAGE`` normalizes to None — list shows everything."""
+    account = accounts.get(db, "178414000000001")
+    assert account is not None
+    ig = posts.create(db, platform="instagram", account_id=account.id, caption="hello")
+
+    response = await client.get("/posts?platform=GARBAGE")
+    assert response.status_code == 200
+    assert ig.id in response.text
+
+
+async def test_status_filter_scopes_list(client: httpx.AsyncClient, db: Database) -> None:
+    """``?status=published`` and ``?status=failed`` each scope the list to their status."""
+    account = accounts.get(db, "178414000000001")
+    assert account is not None
+    pending = posts.create(db, platform="instagram", account_id=account.id, caption="pending")
+    published = posts.create(db, platform="instagram", account_id=account.id, caption="published")
+    posts.mark_published(db, published.id)
+    failed = posts.create(db, platform="instagram", account_id=account.id, caption="failed")
+    posts.mark_failed(db, failed.id, "explode")
+
+    pub_response = await client.get("/posts?status=published")
+    assert pub_response.status_code == 200
+    assert published.id in pub_response.text
+    assert pending.id not in pub_response.text
+    assert failed.id not in pub_response.text
+
+    fail_response = await client.get("/posts?status=failed")
+    assert fail_response.status_code == 200
+    assert failed.id in fail_response.text
+    assert published.id not in fail_response.text
+
+
+async def test_platform_and_status_filters_compose(client: httpx.AsyncClient, db: Database) -> None:
+    """``?platform=tiktok&status=published`` keeps only the rows matching both axes."""
+    ig_account = accounts.get(db, "178414000000001")
+    tt_account = accounts.get_by_username(db, "test_creator")
+    assert ig_account is not None
+    assert tt_account is not None
+
+    ig_published = posts.create(
+        db, platform="instagram", account_id=ig_account.id, caption="ig pub"
+    )
+    posts.mark_published(db, ig_published.id)
+    tt_published = posts.create(db, platform="tiktok", account_id=tt_account.id, caption="tt pub")
+    posts.mark_published(db, tt_published.id)
+    tt_pending = posts.create(db, platform="tiktok", account_id=tt_account.id, caption="tt pending")
+
+    response = await client.get("/posts?platform=tiktok&status=published")
+    assert response.status_code == 200
+    assert tt_published.id in response.text
+    assert tt_pending.id not in response.text
+    assert ig_published.id not in response.text
 
 
 async def test_search_persists_on_detail(client: httpx.AsyncClient, db: Database) -> None:

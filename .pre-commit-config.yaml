@@ -68,7 +68,11 @@ repos:
     hooks:
       - id: ty
         name: ty (typecheck)
-        entry: uv run ty check
+        # UV_NO_CONFIG=1 skips the project's CodeArtifact index, which
+        # 401s outside the corporate VPN and breaks the commit hook even
+        # though the local venv has every dep we need. The hook still
+        # uses uv-run so the same toolchain is invoked locally and in CI.
+        entry: bash -c 'UV_NO_CONFIG=1 uv run ty check'
         language: system
         types: [python]
         pass_filenames: false

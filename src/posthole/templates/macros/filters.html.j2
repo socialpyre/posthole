@@ -1,0 +1,59 @@
+{% macro filter_bar() %}
+  <div class="flex flex-wrap items-center gap-1.5">{{ caller() }}</div>
+{% endmacro %}
+
+{% macro filter_pill(label, on=false, disabled=false, count=none, href=none, trailing=none) %}
+  {%
+    set base_classes = "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full
+    border px-[11px] py-[5px] font-sans text-[12px] font-medium
+    leading-tight"
+  %}
+  {%
+    set state_classes = "border-(--border-mid) text-(--sub) hover:text-(--fg)" if not on
+    else "border-transparent bg-(--accent-bg) text-(--accent-text)"
+  %}
+  {% set disabled_classes = "cursor-not-allowed text-(--muted) opacity-65 hover:text-(--muted)" %}
+
+  {% if disabled %}
+    <span
+      class="{{ base_classes }} {{ state_classes }} {{ disabled_classes }}"
+      aria-disabled="true"
+    >
+      <span>{{ label }}</span>
+      {% if count is not none %}
+        <span class="font-mono text-[11px] text-(--muted)">{{ count }}</span>
+      {% endif %}
+      {% if trailing %}{{ trailing }}{% endif %}
+    </span>
+  {% elif href %}
+    <a href="{{ href }}" class="{{ base_classes }} {{ state_classes }}">
+      <span>{{ label }}</span>
+      {% if count is not none %}
+        <span
+          class="font-mono text-[11px] {% if on %}text-(--accent-text){% else %}text-(--muted){% endif %}"
+          >{{ count }}</span
+        >
+      {% endif %}
+      {% if trailing %}{{ trailing }}{% endif %}
+    </a>
+  {% else %}
+    <button type="button" class="{{ base_classes }} {{ state_classes }}">
+      <span>{{ label }}</span>
+      {% if count is not none %}
+        <span
+          class="font-mono text-[11px] {% if on %}text-(--accent-text){% else %}text-(--muted){% endif %}"
+          >{{ count }}</span
+        >
+      {% endif %}
+      {% if trailing %}{{ trailing }}{% endif %}
+    </button>
+  {% endif %}
+{% endmacro %}
+
+{% macro soon_badge() %}
+  <span
+    class="rounded border border-(--border-mid) px-1 py-0.5 font-mono text-[9px]
+           font-bold tracking-[0.04em] text-(--muted)"
+    >SOON</span
+  >
+{% endmacro %}

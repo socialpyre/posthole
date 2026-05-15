@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+COUNT_ALL = "SELECT COUNT(*) AS n FROM posts"
+
+COUNT_BY_STATUS = "SELECT status, COUNT(*) AS n FROM posts GROUP BY status"
+
 GET_BY_EXTERNAL_REF = "SELECT * FROM posts WHERE external_ref = ?"
 
 GET_BY_ID = "SELECT * FROM posts WHERE id = ?"
@@ -13,7 +17,12 @@ INSERT = (
     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
-LIST_RECENT = "SELECT * FROM posts ORDER BY created_at DESC LIMIT ?"
+LIST_RECENT = (
+    "SELECT * FROM posts "
+    "WHERE (:platform IS NULL OR platform = :platform) "
+    "AND (:status IS NULL OR status = :status) "
+    "ORDER BY created_at DESC LIMIT :limit"
+)
 
 MARK_FAILED = "UPDATE posts SET status = 'failed', failure_reason = ? WHERE id = ?"
 

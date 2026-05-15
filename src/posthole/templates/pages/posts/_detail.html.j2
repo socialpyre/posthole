@@ -1,35 +1,84 @@
 {% from "macros/icon.html.j2" import icon %}
 {% from "macros/post_link.html.j2" import posts_link %}
+{% from "macros/status_pill.html.j2" import status_pill %}
 {% from "macros/tabs.html.j2" import tabs, tablist, tabpanel %}
 
 {% set username = usernames.get(selected.account_id) %}
+{% set display_name = display_names.get(selected.account_id) %}
+{% set thumb = selected.media[0] if selected.media else none %}
+{% set thumb_is_image = thumb and thumb.kind == "IMAGE" %}
 
 <div class="flex h-full min-h-0 flex-col bg-(--bg)">
   <header
-    class="sticky top-0 z-10 flex items-center gap-3
-           border-b border-(--border) bg-(--panel) px-4 py-2.5"
+    class="sticky top-0 z-10 flex items-center gap-3 border-b border-(--border)
+           bg-(--panel) px-4 py-2.5"
   >
     <a
-      href="{{ posts_link(q=q) }}"
+      href="{{ posts_link(q=q, platform=platform, status=status) }}"
       data-turbo-frame="_top"
       aria-label="Back to inbox"
-      class="flex h-8 w-8 items-center justify-center rounded text-(--sub)
+      class="flex h-8 w-8 shrink-0 items-center justify-center rounded text-(--sub)
              hover:bg-(--hover) lg:hidden"
       >{{ icon("chev-left", 16) }}</a
     >
 
+    <div
+      class="relative h-8 w-8 shrink-0 overflow-hidden rounded-md border border-(--border)
+             bg-(--code)"
+      aria-hidden="true"
+    >
+      {% if thumb_is_image %}
+        <img src="{{ thumb.url }}" alt="" class="h-full w-full object-cover" />
+      {% else %}
+        <div
+          class="flex h-full w-full items-center justify-center
+                 font-mono text-[9px] uppercase text-(--muted)"
+        >
+          {{ 'IG' if selected.platform == 'instagram' else 'TT' }}
+        </div>
+      {% endif %}
+    </div>
+
     <div class="min-w-0 flex-1">
-      <h2 id="post-detail-heading" class="flex items-center gap-2">
-        <span class="truncate font-sans text-[13px] font-semibold">
+      <h2 id="post-detail-heading" class="flex flex-wrap items-baseline gap-1.5">
+        <span class="truncate font-sans text-[13px] font-semibold text-(--fg)">
           @{{ username or selected.account_id }}
         </span>
-
-        <span data-status="{{ selected.status }}" class="font-mono text-[10px] uppercase">
-          {{ selected.status }}
-        </span>
+        {% if display_name %}
+          <span class="truncate text-[11px] text-(--muted)">· {{ display_name }}</span>
+        {% endif %}
       </h2>
 
       <p class="truncate font-mono text-[11px] text-(--muted)">{{ selected.id }}</p>
+    </div>
+
+    <span class="hidden sm:inline">{{ status_pill(selected.status) }}</span>
+
+    <button
+      type="button"
+      aria-disabled="true"
+      title="Replay · coming soon"
+      class="inline-flex h-7 cursor-not-allowed items-center gap-1 rounded-md
+             border border-(--border-mid) px-2 font-sans text-[11px]
+             font-semibold text-(--sub) opacity-65"
+    >
+      {{ icon("play", 10) }}
+      <span>Replay</span>
+    </button>
+
+    <div class="hidden items-center gap-0.5 lg:flex">
+      {% for ic, label in [("copy", "Copy id"), ("trash", "Delete")] %}
+        <button
+          type="button"
+          aria-label="{{ label }}"
+          aria-disabled="true"
+          title="{{ label }} · coming soon"
+          class="flex h-7 w-7 cursor-not-allowed items-center justify-center
+                 rounded text-(--muted) hover:bg-(--hover)"
+        >
+          {{ icon(ic, 14) }}
+        </button>
+      {% endfor %}
     </div>
   </header>
 

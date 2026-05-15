@@ -6,6 +6,7 @@
 @source "../templates";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant sidebar-collapsed (&:where(html[data-sidebar-collapsed] *));
 
 :root {
   --bg: #fafaf9;
@@ -23,26 +24,81 @@
   --hover: rgb(15 23 42 / 4%);
   --selected: rgb(91 91 214 / 6%);
   --code: #f4f3f0;
+  --chip: #ffffff;
+  --overlay: rgb(15 23 42 / 45%);
   --grid-line: rgb(15 23 42 / 5%);
 }
 
 [data-theme="dark"] {
-  --bg: #0a0a0b;
-  --panel: #111113;
-  --sidebar: #0d0d10;
+  --bg: #17161a;
+  --panel: #1e1d22;
+  --sidebar: #1a191e;
   --fg: #e2e8f0;
-  --sub: #94a3b8;
-  --muted: #64748b;
-  --border: rgb(255 255 255 / 5%);
-  --border-mid: rgb(255 255 255 / 9%);
-  --border-strong: rgb(255 255 255 / 14%);
+  --sub: #9aa3b2;
+  --muted: #6b7280;
+  --border: rgb(255 255 255 / 6%);
+  --border-mid: rgb(255 255 255 / 10%);
+  --border-strong: rgb(255 255 255 / 16%);
   --accent: #818cf8;
-  --accent-bg: rgb(129 140 248 / 12%);
+  --accent-bg: rgb(129 140 248 / 14%);
   --accent-text: #a5b4fc;
-  --hover: rgb(255 255 255 / 4%);
-  --selected: rgb(129 140 248 / 8%);
-  --code: #0a0a0b;
+  --hover: rgb(255 255 255 / 5%);
+  --selected: rgb(129 140 248 / 10%);
+  --code: #141318;
+  --chip: #26252b;
+  --overlay: rgb(0 0 0 / 50%);
   --grid-line: rgb(255 255 255 / 5%);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.liveness-pill[data-liveness-state="live"] {
+  background: rgb(16 185 129 / 8%);
+  border-color: rgb(16 185 129 / 20%);
+  color: #047857;
+}
+.liveness-pill[data-liveness-state="live"] .liveness-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgb(16 185 129 / 15%);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.liveness-pill[data-liveness-state="reconnecting"] {
+  background: rgb(245 158 11 / 8%);
+  border-color: rgb(245 158 11 / 20%);
+  color: #b45309;
+}
+.liveness-pill[data-liveness-state="reconnecting"] .liveness-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgb(245 158 11 / 15%);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.liveness-pill[data-liveness-state="offline"] {
+  background: rgb(148 163 184 / 10%);
+  border-color: rgb(148 163 184 / 25%);
+  color: #475569;
+}
+.liveness-pill[data-liveness-state="offline"] .liveness-dot {
+  background: #94a3b8;
+}
+
+[data-theme="dark"] .liveness-pill[data-liveness-state="live"] {
+  color: #34d399;
+}
+[data-theme="dark"] .liveness-pill[data-liveness-state="reconnecting"] {
+  color: #fbbf24;
+}
+[data-theme="dark"] .liveness-pill[data-liveness-state="offline"] {
+  color: #94a3b8;
 }
 
 @theme {
@@ -117,7 +173,7 @@ html[data-drawer-open] [data-drawer-overlay] {
     transition: width 0.15s ease;
   }
   html[data-sidebar-collapsed] [data-posthole-sidebar] {
-    width: 52px;
+    width: 44px;
   }
   html[data-sidebar-collapsed] [data-collapse-hide] {
     display: none;
@@ -125,7 +181,8 @@ html[data-drawer-open] [data-drawer-overlay] {
   html[data-sidebar-collapsed] [data-collapse-show] {
     display: inline-flex;
   }
-  html[data-sidebar-collapsed] [data-posthole-sidebar] nav a {
+  html[data-sidebar-collapsed] [data-posthole-sidebar] nav a,
+  html[data-sidebar-collapsed] [data-posthole-sidebar] nav span[title] {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
@@ -197,21 +254,39 @@ html[data-drawer-open] [data-drawer-overlay] {
   }
 }
 
-[data-status="published"] {
-  color: #16a34a;
+[data-status-pill="published"] {
+  background: rgb(16 185 129 / 14%);
+  color: #047857;
 }
-[data-status="pending"] {
-  color: #ca8a04;
+[data-status-pill="pending"] {
+  background: rgb(245 158 11 / 14%);
+  color: #b45309;
 }
-[data-status="failed"] {
-  color: #dc2626;
+[data-status-pill="failed"] {
+  background: rgb(239 68 68 / 14%);
+  color: #b91c1c;
 }
-[data-theme="dark"] [data-status="published"] {
-  color: #4ade80;
+[data-theme="dark"] [data-status-pill="published"] {
+  background: rgb(52 211 153 / 15%);
+  color: #34d399;
 }
-[data-theme="dark"] [data-status="pending"] {
-  color: #facc15;
+[data-theme="dark"] [data-status-pill="pending"] {
+  background: rgb(251 191 36 / 15%);
+  color: #fbbf24;
 }
-[data-theme="dark"] [data-status="failed"] {
+[data-theme="dark"] [data-status-pill="failed"] {
+  background: rgb(248 113 113 / 15%);
   color: #f87171;
+}
+
+[data-status-pill="published"] [data-status-pill-dot] {
+  background: #10b981;
+}
+[data-status-pill="pending"] [data-status-pill-dot] {
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px rgb(245 158 11 / 25%);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+[data-status-pill="failed"] [data-status-pill-dot] {
+  background: #ef4444;
 }

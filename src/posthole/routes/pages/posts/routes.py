@@ -22,13 +22,15 @@ async def posts_view(
     request: Request,
     db: DbDep,
     q: str | None = None,
+    platform: str | None = None,
+    status: str | None = None,
     view: str | None = None,
 ) -> HTMLResponse:
-    """Render the inbox at ``/posts``; ``?q=`` filters, ``?view=`` selects the tab."""
+    """Render the inbox at ``/posts``; ``?q=`` / ``?platform=`` / ``?status=`` filter the list."""
     return templates.TemplateResponse(
         request,
         "pages/posts/index.html.j2",
-        inbox_context(db, q=q, view=view),
+        inbox_context(db, q=q, platform=platform, status=status, view=view),
     )
 
 
@@ -38,9 +40,11 @@ async def post_detail_view(
     request: Request,
     db: DbDep,
     q: str | None = None,
+    platform: str | None = None,
+    status: str | None = None,
     view: str | None = None,
 ) -> HTMLResponse:
-    """Render a single post; ``?q=`` keeps the list filtered, ``?view=`` selects the tab."""
+    """Render a single post; ``?q=`` / ``?platform=`` / ``?status=`` keep the list filtered."""
     selected = posts.get(db, post_id)
 
     if selected is None:
@@ -49,5 +53,5 @@ async def post_detail_view(
     return templates.TemplateResponse(
         request,
         "pages/posts/index.html.j2",
-        inbox_context(db, selected=selected, q=q, view=view),
+        inbox_context(db, selected=selected, q=q, platform=platform, status=status, view=view),
     )

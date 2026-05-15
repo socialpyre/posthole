@@ -116,6 +116,22 @@ def create(
     return post
 
 
+def count(db: Database) -> int:
+    """Return the total number of posts."""
+    with db.cursor() as cur:
+        cur.execute(sql.COUNT_ALL)
+        row = cur.fetchone()
+    return int(row["n"]) if row else 0
+
+
+def count_by_status(db: Database) -> dict[PostStatus, int]:
+    """Return per-status post counts (statuses with zero rows are absent)."""
+    with db.cursor() as cur:
+        cur.execute(sql.COUNT_BY_STATUS)
+        rows = cur.fetchall()
+    return {row["status"]: int(row["n"]) for row in rows}
+
+
 def get(db: Database, post_id: str) -> Post | None:
     """Return the post with this id, or ``None``."""
     with db.cursor() as cur:
@@ -132,10 +148,26 @@ def get_by_external_ref(db: Database, external_ref: str) -> Post | None:
     return _from_row(row) if row else None
 
 
-def list_recent(db: Database, *, limit: int = 50) -> list[Post]:
-    """Return up to ``limit`` posts ordered by ``created_at`` descending."""
+def list_recent(
+    db: Database,
+    *,
+    limit: int = 50,
+    platform: str | None = None,
+    status: PostStatus | None = None,
+) -> list[Post]:
+    """Return up to ``limit`` posts ordered by ``created_at`` descending.
+
+    ``platform`` and ``status`` are optional ``WHERE`` predicates pushed
+    into SQL — without them, in-Python filtering on a 50-row slice would
+    silently lie once the table outgrows the slice (sidebar counts would
+    show real totals, the list would show 50-row slices). Both are bound
+    by name so the same statement handles every combination.
+    """
     with db.cursor() as cur:
-        cur.execute(sql.LIST_RECENT, (limit,))
+        cur.execute(
+            sql.LIST_RECENT,
+            {"platform": platform, "status": status, "limit": limit},
+        )
         rows = cur.fetchall()
     return [_from_row(r) for r in rows]
 

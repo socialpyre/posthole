@@ -26,13 +26,13 @@
 
       <div class="flex-1 overflow-y-auto">
         {% if posts %}
-          <ul class="divide-y divide-(--border)">
+          <ul>
             {% for p in posts %}
               {% include "pages/posts/_row.html.j2" %}
             {% endfor %}
           </ul>
         {% else %}
-          {{ empty_state("No posts yet", "Publish one to see it here.") }}
+          {% include "pages/posts/_empty.html.j2" %}
         {% endif %}
       </div>
     </section>

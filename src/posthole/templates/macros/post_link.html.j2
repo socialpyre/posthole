@@ -1,6 +1,8 @@
-{% macro posts_link(post_id=none, q=none) %}
+{% macro posts_link(post_id=none, q=none, platform=none, status=none) %}
   {%- set parts = [] -%}
   {%- if q -%}{%- set _ = parts.append('q=' ~ (q | urlencode)) -%}{%- endif -%}
+  {%- if platform -%}{%- set _ = parts.append('platform=' ~ (platform | urlencode)) -%}{%- endif -%}
+  {%- if status -%}{%- set _ = parts.append('status=' ~ (status | urlencode)) -%}{%- endif -%}
   {%- set suffix = ('?' ~ parts|join('&')) if parts else '' -%}
   {%- if post_id -%}/posts/{{ post_id }}{{ suffix }}{%- else -%}/posts{{ suffix }}{%- endif -%}
 {% endmacro %}

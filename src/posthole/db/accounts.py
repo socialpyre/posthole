@@ -36,6 +36,14 @@ class Account:
     platform: str
 
 
+def count(db: Database) -> int:
+    """Return the total number of accounts."""
+    with db.cursor() as cur:
+        cur.execute(sql.COUNT_ALL)
+        row = cur.fetchone()
+    return int(row["n"]) if row else 0
+
+
 def get(db: Database, account_id: str) -> Account | None:
     """Return the account with this id, or ``None``."""
     with db.cursor() as cur:

@@ -1,22 +1,48 @@
 {% from "macros/post_link.html.j2" import posts_link %}
+{% from "macros/status_pill.html.j2" import status_pill %}
 {% set username = usernames.get(p.account_id) %}
 {% set caption = (p.caption or '')|replace('\n', ' ')|trim %}
+{% set is_selected = selected and selected.id == p.id %}
+{% set first_media = p.media[0] if p.media else none %}
+{% set is_image = first_media and first_media.kind == "IMAGE" %}
+{% set carousel_count = p.media|length if p.media|length > 1 else 0 %}
 
-<li>
+<li class="border-b border-dashed border-(--border) last:border-b-0">
   <a
-    class="flex gap-3 border-l-2 border-transparent px-4 py-3 transition hover:bg-(--hover)"
+    class="relative flex gap-3 border-l-2 px-4 py-3 transition
+           {% if is_selected %}
+      border-(--accent) bg-(--selected)
+    {% else %}
+      border-transparent hover:bg-(--hover)
+    {% endif %}"
     data-action="click->list-selection#select"
     data-list-selection-target="row"
     data-turbo-frame="post-detail"
-    href="{{ posts_link(post_id=p.id, q=q) }}"
-    {% if selected and selected.id == p.id %}aria-current="page"{% endif %}
+    href="{{ posts_link(post_id=p.id, q=q, platform=platform, status=status) }}"
+    {% if is_selected %}aria-current="page"{% endif %}
   >
     <div
-      class="flex h-11 w-11 shrink-0 items-center justify-center
-             rounded-md border border-(--border) bg-(--code)
-             font-mono text-[10px] uppercase text-(--muted)"
+      class="relative h-11 w-11 shrink-0 overflow-hidden rounded-md
+             border border-(--border) bg-(--code)"
     >
-      {{ 'IG' if p.platform == 'instagram' else 'TT' }}
+      {% if is_image %}
+        <img src="{{ first_media.url }}" alt="" class="h-full w-full object-cover" />
+      {% else %}
+        <div
+          class="flex h-full w-full items-center justify-center
+                 font-mono text-[10px] uppercase text-(--muted)"
+        >
+          {{ 'IG' if p.platform == 'instagram' else 'TT' }}
+        </div>
+      {% endif %}
+      {% if carousel_count %}
+        <span
+          class="absolute right-1 top-1 flex h-3.5 min-w-3.5 items-center
+                 justify-center rounded-[3px] bg-black/55 px-1 font-mono
+                 text-[9px] font-bold text-white"
+          >{{ carousel_count }}</span
+        >
+      {% endif %}
     </div>
 
     <div class="min-w-0 flex-1">
@@ -32,9 +58,7 @@
       </p>
 
       <div class="mt-1.5 flex items-center gap-2">
-        <span data-status="{{ p.status }}" class="font-mono text-[10px] uppercase">
-          {{ p.status }}
-        </span>
+        {{ status_pill(p.status) }}
         <span class="font-mono text-[10px] text-(--muted)">{{ p.platform }}</span>
       </div>
     </div>

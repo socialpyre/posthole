@@ -1,0 +1,19 @@
+{%
+  set status_labels = {
+    "pending":   "Publishing",
+    "published": "Published",
+    "failed":    "Error",
+  }
+%}
+
+{% macro status_pill(status, size="sm") %}
+  {% set label = status_labels.get(status, status) %}
+  <span
+    data-status-pill="{{ status }}"
+    class="inline-flex items-center gap-1.5 rounded-full font-sans font-semibold
+           whitespace-nowrap tracking-[0.1px] px-2 py-1 text-[12px]"
+  >
+    <span class="h-1.5 w-1.5 rounded-full" data-status-pill-dot></span>
+    {{ label }}
+  </span>
+{% endmacro %}

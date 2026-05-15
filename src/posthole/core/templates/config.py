@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi_hotwire import HotwireTemplates
 
+from posthole import __version__
 from posthole.core.config import get_settings
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / "templates"
@@ -27,6 +28,7 @@ def _register_globals(instance: HotwireTemplates) -> None:
     # built-in helpers (range, dict, lipsum, …) and reject user-added
     # primitives. The dict accepts any value at runtime.
     instance.env.globals["DEV_RELOAD"] = settings.dev_reload  # ty: ignore[invalid-assignment]
+    instance.env.globals["APP_VERSION"] = __version__  # ty: ignore[invalid-assignment]
 
 
 def _register_tests(instance: HotwireTemplates) -> None:

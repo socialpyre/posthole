@@ -22,6 +22,8 @@ async def handle_post_not_found(request: Request, exc: Exception) -> HTMLRespons
         request.app.state.db,
         not_found=True,
         q=request.query_params.get("q"),
+        platform=request.query_params.get("platform"),
+        status=request.query_params.get("status"),
         view=request.query_params.get("view"),
     )
 
