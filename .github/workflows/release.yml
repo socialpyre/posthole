@@ -84,7 +84,7 @@ jobs:
     if: needs.release.outputs.released == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: write # PSR publish-action attaches dist to GH Release
+      contents: write # gh release create
       id-token: write # PyPI Trusted Publishing OIDC + GHCR attestations
       packages: write # GHCR push
       attestations: write # Docker provenance + SBOM
@@ -103,6 +103,9 @@ jobs:
         with:
           name: release-dist
           path: dist/
+
+      - name: Separate release notes from dist
+        run: mv dist/RELEASE_NOTES.md ./RELEASE_NOTES.md
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
@@ -153,5 +156,5 @@ jobs:
         run: |
           gh release create "$TAG" \
             --title "$TAG" \
-            --notes-file dist/RELEASE_NOTES.md \
+            --notes-file RELEASE_NOTES.md \
             dist/posthole-*.whl dist/posthole-*.tar.gz
