@@ -26,7 +26,11 @@
       {% if trailing %}{{ trailing }}{% endif %}
     </span>
   {% elif href %}
-    <a href="{{ href }}" class="{{ base_classes }} {{ state_classes }}">
+    <a
+      href="{{ href }}"
+      {% if on %}aria-current="page"{% endif %}
+      class="{{ base_classes }} {{ state_classes }}"
+    >
       <span>{{ label }}</span>
       {% if count is not none %}
         <span

@@ -1,0 +1,22 @@
+{% from "macros/icon.html.j2" import icon %}
+
+<div
+  class="mt-8 flex items-start gap-3 rounded-lg border border-(--accent)/20 bg-(--accent-bg)
+         p-4 text-[12px] text-(--fg)"
+>
+  <span class="mt-0.5 flex-none text-(--accent)">{{ icon("zap", 16) }}</span>
+  <div>
+    <div class="font-semibold">Wire up your app</div>
+    <div class="mt-0.5 leading-normal text-(--sub)">
+      Point your client at
+      <code class="rounded bg-(--code) px-1.5 py-0.5 font-mono text-[11px]"
+        >{{ INSTAGRAM_GRAPH_URL }}</code
+      >
+      (Instagram Graph) or
+      <code class="rounded bg-(--code) px-1.5 py-0.5 font-mono text-[11px]"
+        >{{ TIKTOK_CONTENT_URL }}</code
+      >
+      and authenticate with one of the accounts above.
+    </div>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+{% from "macros/filters.html.j2" import filter_bar, filter_pill %}
+
+<div class="mb-5 flex items-center justify-between gap-3">
+  {% call filter_bar() %}
+    {{ filter_pill(label="All accounts", on=(not platform), href="/accounts", count=counts.all) }}
+    {% for key, plabel in platforms %}
+      {{
+        filter_pill(label=plabel, on=(platform == key),
+        href="/accounts?platform=" ~ key, count=counts[key])
+      }}
+    {% endfor %}
+  {% endcall %}
+
+  <div class="hidden items-center gap-1.5 font-mono text-[11px] text-(--muted) sm:inline-flex">
+    <span
+      class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500
+             shadow-[0_0_0_3px_rgba(16,185,129,0.15)]"
+      style="animation: pulse 1.6s ease-in-out infinite;"
+    ></span>
+    {{ live_count }} live · {{ idle_count }} idle
+  </div>
+</div>

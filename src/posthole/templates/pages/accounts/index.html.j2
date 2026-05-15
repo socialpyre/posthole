@@ -1,6 +1,62 @@
 {% extends "layouts/app.html.j2" %}
-{% from "macros/empty_state.html.j2" import empty_state %}
+{% from "macros/icon.html.j2" import icon %}
+{% from "macros/filters.html.j2" import filter_bar, filter_pill %}
+
+{% block page_title %}test accounts · posthole{% endblock %}
 
 {% block main %}
-  {{ empty_state("No accounts connected", "Run an OAuth flow to seed a test account.") }}
+  <div class="h-full overflow-y-auto bg-(--bg)">
+    <div class="mx-auto max-w-260 px-4 py-8 lg:px-8 lg:py-10">
+      <div class="mb-7 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 class="font-sans text-[22px] font-bold tracking-[-0.4px]">Test accounts</h1>
+          <p class="mt-1.5 max-w-140 text-[13px] leading-normal text-(--sub)">
+            Fake users your app authenticates as. Every API call made with their tokens is
+            intercepted by posthole.
+          </p>
+        </div>
+        <button
+          type="button"
+          data-controller="dialog"
+          data-dialog-id-value="new-account-dialog"
+          data-action="click->dialog#open"
+          class="inline-flex items-center gap-1.5 rounded-md bg-(--accent) px-3 py-1.5
+                 text-[13px] font-semibold text-white hover:opacity-90
+                 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent)"
+        >
+          {{ icon("plus", 14) }} New account
+        </button>
+      </div>
+
+      {% include "pages/accounts/_filter_bar.html.j2" %}
+
+      {% if cards %}
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-3">
+          {% for card in cards %}
+            {% include "pages/accounts/_card.html.j2" %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div
+          class="flex flex-col items-center justify-center gap-2 rounded-lg border
+                 border-dashed border-(--border-mid) bg-(--panel) px-6 py-12
+                 text-center text-(--sub)"
+        >
+          <p class="font-sans text-[14px] font-semibold text-(--fg)">No accounts yet</p>
+          <p class="max-w-90 text-[12px]">
+            Create one to point your app's OAuth flow at — captured calls will be tagged to
+            whichever account's token signed them.
+          </p>
+        </div>
+      {% endif %}
+      {% include "pages/accounts/_setup_hint.html.j2" %}
+    </div>
+  </div>
+
+  {% include "pages/accounts/_new_dialog.html.j2" %}
+
+  {# Hoisted out of <article> so the modal isn't an article descendant. #}
+  {% for card in cards %}
+    {% include "pages/accounts/_edit_dialog.html.j2" %}
+  {% endfor %}
 {% endblock %}

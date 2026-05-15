@@ -2,10 +2,13 @@ import "@hotwired/turbo";
 import { Application } from "@hotwired/stimulus";
 
 import CarouselController from "./controllers/carousel_controller.ts";
+import ClipboardController from "./controllers/clipboard_controller.ts";
+import DialogController from "./controllers/dialog_controller.ts";
 import HelloController from "./controllers/hello_controller.ts";
 import ListSelectionController from "./controllers/list_selection_controller.ts";
 import LivenessController from "./controllers/liveness_controller.ts";
 import PhoneController from "./controllers/phone_controller.ts";
+import PlatformTypesController from "./controllers/platform_types_controller.ts";
 import SearchController from "./controllers/search_controller.ts";
 import SidebarController from "./controllers/sidebar_controller.ts";
 import TabsController from "./controllers/tabs_controller.ts";
@@ -20,10 +23,13 @@ declare global {
 const app = Application.start();
 
 app.register("carousel", CarouselController);
+app.register("clipboard", ClipboardController);
+app.register("dialog", DialogController);
 app.register("hello", HelloController);
 app.register("list-selection", ListSelectionController);
 app.register("liveness", LivenessController);
 app.register("phone", PhoneController);
+app.register("platform-types", PlatformTypesController);
 app.register("search", SearchController);
 app.register("sidebar", SidebarController);
 app.register("tabs", TabsController);

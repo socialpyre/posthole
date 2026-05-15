@@ -12,7 +12,10 @@ from posthole.db import Database, accounts, posts
         # /posts has the demo carousel seeded by migration 0003, so the
         # empty-state copy no longer applies; assert the inbox shell instead.
         ("/posts", 'id="post-detail"'),
-        ("/accounts", "No accounts"),
+        # /accounts seeds 4 IG + 3 TT accounts via migrations 0001/0002,
+        # so the empty-state copy no longer applies; assert the page header
+        # and the New-account dialog id instead.
+        ("/accounts", 'id="new-account-dialog"'),
         ("/scenarios", "All scenarios off"),
         ("/settings", "Settings"),
     ],

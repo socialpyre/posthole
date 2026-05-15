@@ -14,3 +14,11 @@ INSERT_TOKEN = "INSERT INTO oauth_tokens (token, account_id, kind, created_at) V
 SELECT_CODE = "SELECT * FROM oauth_codes WHERE code = ?"
 
 SELECT_TOKEN = "SELECT * FROM oauth_tokens WHERE token = ?"  # noqa: S105 — SQL constant
+
+# ``short`` tokens are excluded — they expire too fast to be a useful card stat.
+LATEST_LONG_TOKEN_BY_ACCOUNT = (
+    "SELECT account_id, kind, MAX(created_at) AS created_at "  # noqa: S105 — SQL constant
+    "FROM oauth_tokens "
+    "WHERE kind IN ('long', 'refresh') "
+    "GROUP BY account_id"
+)

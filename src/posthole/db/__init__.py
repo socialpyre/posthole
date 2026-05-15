@@ -11,16 +11,18 @@ arg. Import the modules directly:
 """
 
 from posthole.db import accounts, oauth, posts
-from posthole.db.accounts import Account, AccountType
+from posthole.db.accounts import Account, AccountStats, AccountType, DuplicateUsernameError
 from posthole.db.database import Database, DbDep, get_db
 from posthole.db.oauth import OAuthCode, OAuthToken, TokenKind
 from posthole.db.posts import Post, PostStatus
 
 __all__ = [
     "Account",
+    "AccountStats",
     "AccountType",
     "Database",
     "DbDep",
+    "DuplicateUsernameError",
     "OAuthCode",
     "OAuthToken",
     "Post",

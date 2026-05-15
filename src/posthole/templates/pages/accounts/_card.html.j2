@@ -1,0 +1,170 @@
+{% from "macros/icon.html.j2" import icon %}
+
+{%
+  set platform_meta = {
+    "instagram": {
+      "stripe": "linear-gradient(90deg,#fb7185,#f59e0b)",
+      "badge":  "linear-gradient(135deg,#fb7185,#f59e0b)",
+      "glyph":  "instagram",
+      "id_label": "IG_USER_ID",
+    },
+    "tiktok": {
+      "stripe": "linear-gradient(90deg,#25f4ee,#fe2c55)",
+      "badge":  "linear-gradient(135deg,#25f4ee,#fe2c55)",
+      "glyph":  "tiktok",
+      "id_label": "OPEN_ID",
+    },
+  }
+%}
+{% set meta = platform_meta[card.account.platform] %}
+
+{%
+  set avatar_palette = [
+    "linear-gradient(135deg,#f97316,#ec4899)",
+    "linear-gradient(135deg,#0ea5e9,#6366f1)",
+    "linear-gradient(135deg,#10b981,#06b6d4)",
+    "linear-gradient(135deg,#fbbf24,#f97316)",
+    "linear-gradient(135deg,#a855f7,#3b82f6)",
+    "linear-gradient(135deg,#facc15,#ef4444)",
+  ]
+%}
+{% set avatar_gradient = card.account.avatar_url or avatar_palette[card.avatar_seed % (avatar_palette | length)] %}
+{% set acct_kind_label = card.account.account_type | replace('_ACCOUNT', '') | replace('_', ' ') | capitalize %}
+
+<article class="flex flex-col overflow-hidden rounded-[10px] border border-(--border) bg-(--panel)">
+  <div class="h-0.75" style="background: {{ meta.stripe }};"></div>
+
+  <div class="flex flex-col gap-3 p-3.5">
+    <div class="flex items-start gap-3">
+      <div class="relative flex-none">
+        <div
+          class="h-11 w-11 rounded-full"
+          style="background: {{ avatar_gradient }};"
+          aria-hidden="true"
+        ></div>
+        <div
+          class="absolute -right-0.5 -bottom-0.5 flex h-5 w-5 items-center justify-center
+                 rounded-full text-white ring-2 ring-(--panel)"
+          style="background: {{ meta.badge }};"
+          aria-hidden="true"
+        >
+          {{ icon(meta.glyph, 11) }}
+        </div>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-1.5">
+          <span class="truncate text-[14px] font-bold text-(--fg)"
+            >@{{ card.account.username }}</span
+          >
+          <span
+            aria-hidden="true"
+            class="inline-block h-1.5 w-1.5 flex-none rounded-full {{ 'bg-emerald-500' if card.live else 'bg-slate-400' }}"
+            style="{{ 'box-shadow: 0 0 0 3px rgba(16,185,129,0.18);' if card.live else '' }}"
+          ></span>
+          <span class="sr-only">{{ 'Active' if card.live else 'Idle' }}</span>
+        </div>
+        <div class="mt-0.5 flex items-center gap-1.5 text-[11px] text-(--sub)">
+          <span class="truncate">{{ card.account.display_name }}</span>
+          <span class="text-(--muted)">·</span>
+          <span class="capitalize">{{ acct_kind_label }}</span>
+        </div>
+      </div>
+      <div class="flex flex-none items-center gap-0.5">
+        <button
+          type="button"
+          aria-label="Edit @{{ card.account.username }}"
+          data-controller="dialog"
+          data-dialog-id-value="edit-account-dialog-{{ card.account.id }}"
+          data-action="click->dialog#open"
+          class="flex h-7 w-7 items-center justify-center rounded text-(--muted)
+                 hover:bg-(--hover) hover:text-(--fg)
+                 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent)"
+        >
+          {{ icon("pencil", 14) }}
+        </button>
+        <form
+          method="post"
+          action="/accounts/{{ card.account.id }}/delete"
+          data-turbo-confirm="Delete @{{ card.account.username }}?"
+        >
+          <button
+            type="submit"
+            aria-label="Delete @{{ card.account.username }}"
+            class="flex h-7 w-7 items-center justify-center rounded text-(--muted)
+                   hover:bg-(--hover) hover:text-(--fg)
+                   focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent)"
+          >
+            {{ icon("trash", 13) }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div
+      class="flex items-center gap-2 rounded-md border border-(--border) bg-(--code) py-1.5 pr-1.5 pl-2"
+      data-controller="clipboard"
+      data-clipboard-text-value="{{ card.account.id }}"
+    >
+      <span
+        class="flex-none font-mono text-[9px] font-bold tracking-[0.06em] text-(--muted) uppercase"
+        >{{ meta.id_label }}</span
+      >
+      <span class="min-w-0 flex-1 truncate font-mono text-[11px] text-(--fg)"
+        >{{ card.account.id }}</span
+      >
+      <button
+        type="button"
+        aria-label="Copy {{ meta.id_label }} for @{{ card.account.username }}"
+        data-action="click->clipboard#copy"
+        data-clipboard-target="button"
+        class="flex h-[22px] w-[22px] flex-none items-center justify-center rounded
+               text-(--muted) hover:bg-(--hover) hover:text-(--fg)
+               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--accent)"
+      >
+        <span data-clipboard-target="defaultIcon">{{ icon("copy", 11) }}</span>
+        <span data-clipboard-target="successIcon" class="hidden text-emerald-600"
+          >{{ icon("check", 11) }}</span
+        >
+      </button>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 border-t border-dashed border-(--border) pt-3">
+      <div>
+        <div class="font-mono text-[14px] font-bold leading-none text-(--fg)">
+          {{ card.intercepted_count }}
+        </div>
+        <div class="mt-1 font-sans text-[9px] font-bold tracking-[0.06em] text-(--muted) uppercase">
+          intercepted
+        </div>
+      </div>
+      <div>
+        <div class="font-mono text-[14px] font-bold leading-none text-(--fg)">
+          {{ card.last_seen_label }}
+        </div>
+        <div class="mt-1 font-sans text-[9px] font-bold tracking-[0.06em] text-(--muted) uppercase">
+          last seen
+        </div>
+      </div>
+      <div>
+        {%
+          set token_assist = {
+            "urgent": "expires soon",
+            "expired": "token expired",
+          }
+        %}
+        <div
+          class="font-mono text-[14px] font-bold leading-none"
+          data-token-tone="{{ card.token_tone }}"
+        >
+          {{ card.token_label }}
+          {% if card.token_tone in token_assist %}
+            <span class="sr-only">— {{ token_assist[card.token_tone] }}</span>
+          {% endif %}
+        </div>
+        <div class="mt-1 font-sans text-[9px] font-bold tracking-[0.06em] text-(--muted) uppercase">
+          token
+        </div>
+      </div>
+    </div>
+  </div>
+</article>

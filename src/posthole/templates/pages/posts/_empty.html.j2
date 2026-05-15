@@ -1,8 +1,5 @@
 {% from "macros/icon.html.j2" import icon %}
 
-{# The list is empty either because nothing has ever been captured, or because
-   the current filters yield no matches. The two states want very different
-   copy — onboarding hint vs. a way back to a useful state. #}
 {% set has_filters = q or platform or status %}
 
 <div class="flex h-full w-full items-center justify-center px-6 py-10">
@@ -28,7 +25,7 @@
       <pre
         class="mt-4 overflow-x-auto rounded-md border border-(--border) bg-(--code)
                px-3 py-2.5 text-left font-mono text-[11px] leading-relaxed text-(--fg)"
-      ><span class="text-(--muted)">$ </span>export GRAPH_API_BASE=http://localhost:8025</pre>
+      ><span class="text-(--muted)">$ </span>export GRAPH_API_BASE={{ INSTAGRAM_GRAPH_URL }}</pre>
     {% endif %}
   </div>
 </div>

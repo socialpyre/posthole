@@ -45,6 +45,14 @@ class OAuthToken:
     created_at: datetime
 
 
+@dataclass(slots=True, frozen=True)
+class LongTokenInfo:
+    """Just the ``kind`` + ``created_at`` of a long-lived token — what the grid needs."""
+
+    kind: TokenKind
+    created_at: datetime
+
+
 def consume_code(db: Database, code: str) -> OAuthCode | None:
     """Look up a code, then delete it. Returns the context, or ``None`` if unknown.
 
@@ -73,6 +81,19 @@ def get_token(db: Database, token: str) -> OAuthToken | None:
         cur.execute(sql.SELECT_TOKEN, (token,))
         row = cur.fetchone()
     return _token_from_row(row) if row else None
+
+
+def latest_long_token_by_account(db: Database) -> dict[str, LongTokenInfo]:
+    """Most-recent long/refresh token per account; keys absent for accounts with none."""
+    with db.cursor() as cur:
+        cur.execute(sql.LATEST_LONG_TOKEN_BY_ACCOUNT)
+        rows = cur.fetchall()
+    return {
+        row["account_id"]: LongTokenInfo(
+            kind=row["kind"], created_at=datetime.fromisoformat(row["created_at"])
+        )
+        for row in rows
+    }
 
 
 def issue_code(db: Database, *, account_id: str, redirect_uri: str, state: str) -> OAuthCode:

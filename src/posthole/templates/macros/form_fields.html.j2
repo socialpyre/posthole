@@ -1,0 +1,86 @@
+{% macro _label(field_id, label) %}
+  <label
+    for="{{ field_id }}"
+    class="mb-1.5 block font-sans text-[11px] font-semibold tracking-[0.02em] text-(--sub)"
+    >{{ label }}</label
+  >
+{% endmacro %}
+
+{% macro _error(error_id, message) %}
+  {% if message %}
+    <p id="{{ error_id }}" class="mt-1 text-[11px] text-red-600">{{ message }}</p>
+  {% endif %}
+{% endmacro %}
+
+{# Plain text input. #}
+{% macro text_field(field_id, name, label, value, error=None, error_id=None, maxlength=None, placeholder=None) %}
+  <div>
+    {{ _label(field_id, label) }}
+    <input
+      id="{{ field_id }}"
+      name="{{ name }}"
+      type="text"
+      required
+      {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+      value="{{ value }}"
+      {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+      {% if error %}aria-invalid="true" aria-describedby="{{ error_id }}"{% endif %}
+      class="w-full rounded-md border border-(--border-mid) bg-(--panel) px-2.5 py-1.5
+             text-[13px] outline-none focus:border-(--accent)"
+    />
+    {{ _error(error_id, error) }}
+  </div>
+{% endmacro %}
+
+{% macro handle_field(field_id, name, value, error=None, error_id=None, help_id=None, maxlength=30, placeholder=None) %}
+  {# Built up front so prettier can't collapse the space inside the attr. #}
+  {% set described_by = help_id ~ ((' ' ~ error_id) if error else '') %}
+
+  <div>
+    {{ _label(field_id, "Handle") }}
+    <div
+      class="flex items-center rounded-md border border-(--border-mid) bg-(--panel)
+             focus-within:border-(--accent)"
+    >
+      <span class="pl-2.5 font-mono text-[12px] text-(--muted)">@</span>
+      <input
+        id="{{ field_id }}"
+        name="{{ name }}"
+        type="text"
+        required
+        maxlength="{{ maxlength }}"
+        autocomplete="off"
+        value="{{ value }}"
+        {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+        aria-describedby="{{ described_by }}"
+        {% if error %}aria-invalid="true"{% endif %}
+        class="flex-1 bg-transparent px-1.5 py-1.5 font-mono text-[12px] outline-none"
+      />
+    </div>
+    <span id="{{ help_id }}" class="sr-only">
+      Type just the handle — the at-sign is added automatically.
+    </span>
+    {{ _error(error_id, error) }}
+  </div>
+{% endmacro %}
+
+{% macro select_field(field_id, name, label, selected, options, error=None, error_id=None) %}
+  <div>
+    {{ _label(field_id, label) }}
+    <select
+      id="{{ field_id }}"
+      name="{{ name }}"
+      required
+      {% if error %}aria-invalid="true" aria-describedby="{{ error_id }}"{% endif %}
+      class="w-full rounded-md border border-(--border-mid) bg-(--panel) px-2.5 py-1.5
+             text-[13px] outline-none focus:border-(--accent)"
+    >
+      {% for value, opt_label in options %}
+        <option value="{{ value }}" {% if selected == value %}selected{% endif %}>
+          {{ opt_label }}
+        </option>
+      {% endfor %}
+    </select>
+    {{ _error(error_id, error) }}
+  </div>
+{% endmacro %}

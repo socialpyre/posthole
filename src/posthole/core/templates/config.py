@@ -29,6 +29,9 @@ def _register_globals(instance: HotwireTemplates) -> None:
     # primitives. The dict accepts any value at runtime.
     instance.env.globals["DEV_RELOAD"] = settings.dev_reload  # ty: ignore[invalid-assignment]
     instance.env.globals["APP_VERSION"] = __version__  # ty: ignore[invalid-assignment]
+    # Documented mock-server URLs (the user points their app here).
+    instance.env.globals["INSTAGRAM_GRAPH_URL"] = "http://localhost:8025"  # ty: ignore[invalid-assignment]
+    instance.env.globals["TIKTOK_CONTENT_URL"] = "http://localhost:8025/tiktok"  # ty: ignore[invalid-assignment]
 
 
 def _register_tests(instance: HotwireTemplates) -> None:

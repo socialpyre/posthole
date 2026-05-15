@@ -273,6 +273,106 @@ def test_accounts_list_all_filters_by_platform(db: Database) -> None:
     assert all(a.platform == "tiktok" for a in tt_only)
 
 
+def test_accounts_create_round_trip(db: Database) -> None:
+    """``create`` mints a row whose id has the platform's shape and is retrievable."""
+    created = accounts.create(
+        db,
+        platform="instagram",
+        username="newco.app",
+        display_name="New Co",
+        account_type="BUSINESS",
+    )
+
+    assert created.id.startswith("17841")
+    assert len(created.id) == 17  # 17841 + 12 random digits
+
+    fetched = accounts.get(db, created.id)
+    assert fetched is not None
+    assert fetched.username == "newco.app"
+    assert fetched.display_name == "New Co"
+    assert fetched.account_type == "BUSINESS"
+    assert fetched.platform == "instagram"
+
+
+def test_accounts_create_tiktok_id_shape(db: Database) -> None:
+    """TikTok ids are ``tt-`` + 19 digits to match the seed-row pattern."""
+    created = accounts.create(
+        db,
+        platform="tiktok",
+        username="newcreator",
+        display_name="New Creator",
+        account_type="CREATOR_ACCOUNT",
+    )
+
+    assert created.id.startswith("tt-")
+    assert created.id[3:].isdigit()
+    assert len(created.id) == 3 + 19
+
+
+def test_accounts_delete_returns_true_and_removes_row(db: Database) -> None:
+    """``delete`` removes the row and returns ``True`` for the affected id."""
+    seeded = accounts.get(db, "178414000000001")
+    assert seeded is not None
+
+    deleted = accounts.delete(db, seeded.id)
+
+    assert deleted is True
+    assert accounts.get(db, seeded.id) is None
+
+
+def test_accounts_delete_returns_false_for_unknown_id(db: Database) -> None:
+    """Deleting an unknown id is a no-op and reports it via ``False``."""
+    assert accounts.delete(db, "does-not-exist") is False
+
+
+def test_accounts_delete_revokes_oauth_tokens_and_codes(db: Database) -> None:
+    """Cascade: deleting an account removes its OAuth state so old tokens stop authorizing."""
+    token = oauth.issue_token(db, account_id="178414000000001", kind="long")
+    code = oauth.issue_code(
+        db, account_id="178414000000001", redirect_uri="http://localhost/cb", state="x"
+    )
+
+    assert accounts.delete(db, "178414000000001") is True
+
+    assert oauth.get_token(db, token.token) is None
+    assert oauth.get_code(db, code.code) is None
+
+
+def test_accounts_count_by_platform_groups_seed_rows(db: Database) -> None:
+    """``count_by_platform`` returns the seeded 2 IG + 2 TT distribution."""
+    by_platform = accounts.count_by_platform(db)
+
+    assert by_platform == {"instagram": 2, "tiktok": 2}
+
+
+def test_accounts_stats_by_account_aggregates_posts(db: Database) -> None:
+    """``stats_by_account`` returns intercepted_count + last_post_at per account."""
+    posts.create(db, platform="instagram", account_id="178414000000001", caption="a")
+    posts.create(db, platform="instagram", account_id="178414000000001", caption="b")
+    posts.create(db, platform="instagram", account_id="178414000000002", caption="c")
+
+    stats = accounts.stats_by_account(db)
+
+    assert stats["178414000000001"].intercepted_count >= 2
+    assert stats["178414000000002"].intercepted_count >= 1
+    assert stats["178414000000001"].last_post_at is not None
+
+
+def test_accounts_stats_by_account_skips_accounts_with_no_posts(db: Database) -> None:
+    """Accounts with zero captures don't appear in the stats map."""
+    quiet = accounts.create(
+        db,
+        platform="instagram",
+        username="quiet",
+        display_name="Quiet",
+        account_type="BUSINESS",
+    )
+
+    stats = accounts.stats_by_account(db)
+
+    assert quiet.id not in stats
+
+
 # ── OAuth ───────────────────────────────────────────────────────────────────
 
 
