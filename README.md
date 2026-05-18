@@ -16,6 +16,8 @@ inbox-style UI shows every post you've published alongside the complete HTTP
 transcript of each call. Instagram is the first platform supported; TikTok,
 Facebook, and others are on the roadmap.
 
+![posthole inbox UI with a captured post rendered in a device frame](docs/images/posthole-hero.png)
+
 It mocks the parts of these APIs you actually need while developing:
 
 - **OAuth flows** — authorize dialogs, token exchange, and token refresh.
